@@ -1,7 +1,81 @@
 @page "/"
 
-<h1>Hello, world!</h1>
+@using OnlineChess.Data
+@inject PlayerDataService playerData
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.SignalR.Client
+@implements IAsyncDisposable
 
-Welcome to your new app.
+@if (string.IsNullOrEmpty(playerData.Name()))
+{
+    NavigationManager.NavigateTo("/login");
+}
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+<h1>Hello, @playerData.Name()!</h1>
+
+
+please select your opponent:
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Player name</th>
+            <th>Status</th>
+            <th>Send Invite</th>
+        </tr>
+    </thead>
+    <tbody>
+        @* @foreach (var forecast in forecasts)
+        {
+            <tr>
+                <td>@forecast.Date.ToShortDateString()</td>
+                <td>@forecast.TemperatureC</td>
+                <td>@forecast.TemperatureF</td>
+                <td>@forecast.Summary</td>
+            </tr>
+        } *@
+    </tbody>
+</table>    
+
+@* <SurveyPrompt Title="How is Blazor working for you?" /> *@
+
+@code {
+    private HubConnection hubConnection;
+    private List<PlayerData> playerList = new List<PlayerData>();
+    @* private string userInput; *@
+    @* private string messageInput; *@
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/lobbyhub"))
+            .Build();
+
+        hubConnection.On<string>("NewClientJoined", (newUserName) =>
+        {
+            @* var encodedMsg = $"{user}: {message}";
+            messages.Add(encodedMsg); *@
+            playerList.Add(new PlayerData(newUserName, PlayerState.Ready));
+
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+
+        await hubConnection.SendAsync("NewPlayerJoined", playerData.Name());
+    }
+
+    @* async Task Send() =>
+        await hubConnection.SendAsync("SendMessage", userInput, messageInput); *@
+
+    public bool IsConnected =>
+        hubConnection.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}

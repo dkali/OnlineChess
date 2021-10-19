@@ -1,0 +1,27 @@
+﻿@page "/login"
+
+@using OnlineChess.Data
+@inject PlayerDataService playerData
+@inject NavigationManager NavManager
+
+<h3>Welcome to Online Chess</h3>
+<div>
+    please enter your nickname
+    <input @bind="userInput"/>
+    <button @onclick="OnSubmit">Submit</button>
+</div>
+
+
+@code {
+    private string userInput;
+
+    private void OnSubmit()
+    {
+        if (!string.IsNullOrEmpty(userInput))
+        {
+            playerData.Name(userInput);
+            playerData.PlayerState(PlayerState.Ready);
+            NavManager.NavigateTo("/");
+        }
+    }
+}
