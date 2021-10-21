@@ -1,8 +1,9 @@
 ﻿@page "/login"
 
 @using OnlineChess.Data
-@inject PlayerDataService playerData
-@inject NavigationManager NavManager
+@inject PlayerDataService playerDataService
+@inject LobbyService LobbyService
+@inject NavigationManager navManager
 
 <h3>Welcome to Online Chess</h3>
 <div>
@@ -10,18 +11,31 @@
     <input @bind="userInput"/>
     <button @onclick="OnSubmit">Submit</button>
 </div>
-
+@if (showWarning)
+{
+    <div>
+        Sorry, Name is already taken
+    </div>
+}
 
 @code {
     private string userInput;
+    private bool showWarning = false;
 
     private void OnSubmit()
     {
         if (!string.IsNullOrEmpty(userInput))
         {
-            playerData.Name(userInput);
-            playerData.PlayerState(PlayerState.Ready);
-            NavManager.NavigateTo("/");
+            if (LobbyService.NameAvailable(userInput))
+            {
+                playerDataService.currentPlayer.Name = userInput;
+                playerDataService.currentPlayer.State = PlayerState.Ready;
+                navManager.NavigateTo("/");
+            }
+            else
+            {
+                showWarning = true;
+            }
         }
     }
 }

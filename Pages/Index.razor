@@ -1,39 +1,40 @@
 @page "/"
 
 @using OnlineChess.Data
-@inject PlayerDataService playerData
+@inject PlayerDataService playerDataService
+@inject LobbyService lobbyService
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.SignalR.Client
 @implements IAsyncDisposable
 
-@if (string.IsNullOrEmpty(playerData.Name()))
+@if (string.IsNullOrEmpty(playerDataService.currentPlayer.Name))
 {
     NavigationManager.NavigateTo("/login");
 }
 
-<h1>Hello, @playerData.Name()!</h1>
+<h1>Hello, @playerDataService.currentPlayer.Name!</h1>
 
-
-please select your opponent:
+Active Players:
 
 <table class="table">
     <thead>
         <tr>
             <th>Player name</th>
-            <th>Status</th>
-            <th>Send Invite</th>
+            @* <th>Connection ID </th>
+            <th>Status</th> *@
+            @* <th>Send Invite</th> *@
         </tr>
     </thead>
     <tbody>
-        @* @foreach (var forecast in forecasts)
+        @foreach (var playerName in playerList)
         {
             <tr>
-                <td>@forecast.Date.ToShortDateString()</td>
-                <td>@forecast.TemperatureC</td>
-                <td>@forecast.TemperatureF</td>
-                <td>@forecast.Summary</td>
+                <td>@playerName</td>
+                @* <td>@player.ConnectionId</td>
+                <td>@player.State</td> *@
+                @* <td>@forecast.Summary</td> *@
             </tr>
-        } *@
+        }
     </tbody>
 </table>    
 
@@ -41,9 +42,8 @@ please select your opponent:
 
 @code {
     private HubConnection hubConnection;
-    private List<PlayerData> playerList = new List<PlayerData>();
-    @* private string userInput; *@
-    @* private string messageInput; *@
+    public string playerName;
+    private List<string> playerList = new List<string>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -51,18 +51,15 @@ please select your opponent:
             .WithUrl(NavigationManager.ToAbsoluteUri("/lobbyhub"))
             .Build();
 
-        hubConnection.On<string>("NewClientJoined", (newUserName) =>
+        hubConnection.On<List<string>>("RefreshPlayerList", (players) =>
         {
-            @* var encodedMsg = $"{user}: {message}";
-            messages.Add(encodedMsg); *@
-            playerList.Add(new PlayerData(newUserName, PlayerState.Ready));
-
+            playerList = players;
             StateHasChanged();
         });
 
         await hubConnection.StartAsync();
 
-        await hubConnection.SendAsync("NewPlayerJoined", playerData.Name());
+        lobbyService.AddPlayer(hubConnection.ConnectionId, playerDataService.currentPlayer);
     }
 
     @* async Task Send() =>

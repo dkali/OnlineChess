@@ -30,8 +30,10 @@ namespace OnlineChess
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+            services.AddSingleton<LobbyHub>();
             services.AddSingleton<WeatherForecastService>();
-            services.AddSingleton<PlayerDataService>();
+            services.AddSingleton<LobbyService>();
+            services.AddScoped<PlayerDataService>();
             services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
