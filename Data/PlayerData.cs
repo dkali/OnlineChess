@@ -14,7 +14,5 @@ namespace OnlineChess.Data
     {
         public string Name { get; set; }
         public PlayerState State { get; set; }
-
-        public PlayerData(){}
     }
 }

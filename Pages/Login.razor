@@ -1,28 +1,134 @@
 ﻿@page "/login"
 
-@using OnlineChess.Data
 @inject PlayerDataService playerDataService
 @inject LobbyService LobbyService
-@inject NavigationManager navManager
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory ClientFactory
+@using System
+@using System.Text
+@using System.Text.Json
+@using System.Net.Http.Headers
+@using Microsoft.AspNetCore.WebUtilities
+@using OnlineChess.Data
 
 <h3>Welcome to Online Chess</h3>
 <div>
-    please enter your nickname
-    <input @bind="userInput"/>
-    <button @onclick="OnSubmit">Submit</button>
+    Please <button @onclick="RedirectToGoogleAuth">Login with Google</button>
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <div> 
+            Something went wrong:
+            @_error
+        </div>
+    }
 </div>
-@if (showWarning)
+
+@if (!string.IsNullOrEmpty(playerDataService.currentPlayer.Name))
 {
-    <div>
-        Sorry, Name is already taken
-    </div>
+    Console.WriteLine("[OC] redirect to /");
+    NavigationManager.NavigateTo("/");
 }
 
 @code {
-    private string userInput;
-    private bool showWarning = false;
+    private string _authorizationCode, _error;
+    // protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
+    {
+        if (string.IsNullOrEmpty(playerDataService.currentPlayer.Name))
+        {
+            _error = string.Empty;
+            var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("code", out var _GoogleCode))
+            {
+                // user have approved our consent and granted permissions
+                Console.WriteLine("[OC] 'Code' query parametr detected");
+                _authorizationCode = _GoogleCode;
 
-    private void OnSubmit()
+                RequestTokens();
+            }
+            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("error", out var _Error))
+            {
+                _error = _Error;
+            }
+        }
+
+        @* lobbyService.AddPlayer(hubConnection.ConnectionId, playerDataService.currentPlayer); *@
+    }
+
+    // Exchange authorization code for refresh and access tokens
+    async Task RequestTokens()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, "https://oauth2.googleapis.com/token");
+        request.Headers.Add("Accept", "application/vnd.github.v3+json");
+
+        request.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            { "client_id", "527012841613-ao9pc9vkfutider6bq26jt0vnr1tj7n2.apps.googleusercontent.com" },
+            { "client_secret", "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" },
+            { "code", _authorizationCode},
+            { "grant_type", "authorization_code" },
+            { "redirect_uri", "http://myOnlineChess.com:5000/login" }
+        });
+        request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+
+        var client = ClientFactory.CreateClient();
+
+        HttpResponseMessage response = await client.SendAsync(request);
+
+        OAuthToken tData;
+        if (response.IsSuccessStatusCode)
+        {
+            var responseStream = await response.Content.ReadAsStreamAsync();
+            tData = await JsonSerializer.DeserializeAsync<OAuthToken>(responseStream);
+            Console.WriteLine($"[OC] Got access token from Google: {tData.access_token}");
+
+            await RequestForUserInfo(tData);
+        }
+        else
+        {
+            _error = "Cannot exchange authorization code for refresh and access tokens";
+        }
+    }
+
+    async Task RequestForUserInfo(OAuthToken tData)
+    {
+        // try to access google API
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses");
+        request.Headers.Add("Accept", "application/vnd.github.v3+json");
+        request.Headers.Add("Authorization", $"Bearer {tData.access_token}");
+
+        var client = ClientFactory.CreateClient();
+        HttpResponseMessage response = await client.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("[OC] Got user name");
+
+            try
+            {
+                string stringifiedJson = await response.Content.ReadAsStringAsync();
+                var profile = JsonDocument.Parse(stringifiedJson);
+                string resourceName = profile.RootElement.GetProperty("resourceName").GetString();
+                Console.WriteLine($"[OC] resourceName = {resourceName}");
+                string userName = profile.RootElement.GetProperty("names")[0].GetProperty("displayName").GetString();
+                Console.WriteLine($"[OC] userName = {userName}");
+                playerDataService.currentPlayer.Name = userName;
+                NavigationManager.NavigateTo("/");
+            }
+            catch
+            {
+                _error = "Error on Json deserialization";
+            }
+        }
+        else
+        {
+            _error = "Cannot get user name";
+        }
+    }
+
+    
+
+    @* private void OnSubmit()
     {
         if (!string.IsNullOrEmpty(userInput))
         {
@@ -30,12 +136,25 @@
             {
                 playerDataService.currentPlayer.Name = userInput;
                 playerDataService.currentPlayer.State = PlayerState.Ready;
-                navManager.NavigateTo("/");
+                NavigationManager.NavigateTo("/");
             }
             else
             {
                 showWarning = true;
             }
         }
+    } *@
+
+    private async Task RedirectToGoogleAuth()
+    {
+        StringBuilder sb = new StringBuilder("https://accounts.google.com/o/oauth2/v2/auth?");
+        sb.Append("client_id=527012841613-ao9pc9vkfutider6bq26jt0vnr1tj7n2.apps.googleusercontent.com");
+        sb.Append("&redirect_uri=http://myOnlineChess.com:5000/login");
+        sb.Append("&response_type=code");
+        sb.Append("&scope=profile email openid");
+        sb.Append("&access_type=offline");
+
+        Console.WriteLine("[OC] Redirect to Google OAuth");
+        NavigationManager.NavigateTo(sb.ToString());
     }
 }

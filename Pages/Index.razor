@@ -1,18 +1,21 @@
 @page "/"
 
-@using OnlineChess.Data
 @inject PlayerDataService playerDataService
 @inject LobbyService lobbyService
 @inject NavigationManager NavigationManager
+@inject IHttpClientFactory ClientFactory
+@using System
 @using Microsoft.AspNetCore.SignalR.Client
+@using OnlineChess.Data
 @implements IAsyncDisposable
 
 @if (string.IsNullOrEmpty(playerDataService.currentPlayer.Name))
 {
+    Console.WriteLine("[OC] redirect to login");
     NavigationManager.NavigateTo("/login");
 }
 
-<h1>Hello, @playerDataService.currentPlayer.Name!</h1>
+@* <h1>Hello, @playerDataService.currentPlayer.Name!</h1> *@
 
 Active Players:
 
@@ -59,7 +62,7 @@ Active Players:
 
         await hubConnection.StartAsync();
 
-        lobbyService.AddPlayer(hubConnection.ConnectionId, playerDataService.currentPlayer);
+        @* lobbyService.AddPlayer(hubConnection.ConnectionId, playerDataService.currentPlayer); *@
     }
 
     @* async Task Send() =>
