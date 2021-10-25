@@ -23,17 +23,13 @@
     }
 </div>
 
-@if (!string.IsNullOrEmpty(playerDataService.currentPlayer.Name))
-{
-    Console.WriteLine("[OC] redirect to /");
-    NavigationManager.NavigateTo("/");
-}
-
 @code {
     private string _authorizationCode, _error;
-    // protected override async Task OnInitializedAsync()
-    protected override void OnInitialized()
+    protected override void OnAfterRender(bool firstRender)
     {
+        if (!firstRender)
+            return;
+
         if (string.IsNullOrEmpty(playerDataService.currentPlayer.Name))
         {
             _error = string.Empty;
@@ -113,6 +109,9 @@
                 string userName = profile.RootElement.GetProperty("names")[0].GetProperty("displayName").GetString();
                 Console.WriteLine($"[OC] userName = {userName}");
                 playerDataService.currentPlayer.Name = userName;
+
+                // TODO: find element in json https://marcroussy.com/2020/08/17/deserialization-with-system-text-json/
+
                 NavigationManager.NavigateTo("/");
             }
             catch
@@ -127,7 +126,6 @@
     }
 
     
-
     @* private void OnSubmit()
     {
         if (!string.IsNullOrEmpty(userInput))
