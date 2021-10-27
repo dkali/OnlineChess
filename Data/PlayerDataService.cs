@@ -6,6 +6,6 @@ namespace OnlineChess.Data
 {
     public class PlayerDataService
     {
-        public PlayerData currentPlayer = new PlayerData();
+        public string accountId;
     }
 }

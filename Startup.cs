@@ -1,17 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OnlineChess.Data;
 using Microsoft.AspNetCore.ResponseCompression;
 using OnlineChess.Server.Hubs;
+using EFChessData;
 
 namespace OnlineChess
 {
@@ -20,6 +16,11 @@ namespace OnlineChess
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            // Create your database on startup
+            using (var client = new ChessDataContext())
+            {
+                client.Database.EnsureCreated();
+            }
         }
 
         public IConfiguration Configuration { get; }
@@ -34,12 +35,15 @@ namespace OnlineChess
             services.AddSingleton<LobbyHub>();
             services.AddSingleton<WeatherForecastService>();
             services.AddSingleton<LobbyService>();
+            services.AddSingleton<SQLiteDataService>();
             services.AddScoped<PlayerDataService>();
             services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
+            // Add your context to your services
+            services.AddEntityFrameworkSqlite().AddDbContext<ChessDataContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

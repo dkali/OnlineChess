@@ -4,18 +4,19 @@
 @inject LobbyService lobbyService
 @inject NavigationManager NavigationManager
 @inject IHttpClientFactory ClientFactory
+@inject SQLiteDataService sqliteDb
 @using System
 @using Microsoft.AspNetCore.SignalR.Client
 @using OnlineChess.Data
 @implements IAsyncDisposable
 
-@if (string.IsNullOrEmpty(playerDataService.currentPlayer.Name))
+@if (string.IsNullOrEmpty(playerName))
 {
     Console.WriteLine("[OC] redirect to login");
     NavigationManager.NavigateTo("/login");
 }
 
-@* <h1>Hello, @playerDataService.currentPlayer.Name!</h1> *@
+<h1>Hello, @playerName!</h1>
 
 Active Players:
 
@@ -50,6 +51,8 @@ Active Players:
 
     protected override async Task OnInitializedAsync()
     {
+        playerName = sqliteDb.GetPlayerName(playerDataService.accountId);
+
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/lobbyhub"))
             .Build();
@@ -62,7 +65,8 @@ Active Players:
 
         await hubConnection.StartAsync();
 
-        @* lobbyService.AddPlayer(hubConnection.ConnectionId, playerDataService.currentPlayer); *@
+        if (!string.IsNullOrEmpty(playerName))
+            lobbyService.AddPlayer(playerDataService.accountId, hubConnection.ConnectionId, playerName);
     }
 
     @* async Task Send() =>

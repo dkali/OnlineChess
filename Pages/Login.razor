@@ -4,6 +4,7 @@
 @inject LobbyService LobbyService
 @inject NavigationManager NavigationManager
 @inject IHttpClientFactory ClientFactory
+@inject SQLiteDataService sqliteDb
 @using System
 @using System.Text
 @using System.Text.Json
@@ -30,7 +31,7 @@
         if (!firstRender)
             return;
 
-        if (string.IsNullOrEmpty(playerDataService.currentPlayer.Name))
+        if (string.IsNullOrEmpty(sqliteDb.GetPlayerName(playerDataService.accountId)))
         {
             _error = string.Empty;
             var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
@@ -47,8 +48,6 @@
                 _error = _Error;
             }
         }
-
-        @* lobbyService.AddPlayer(hubConnection.ConnectionId, playerDataService.currentPlayer); *@
     }
 
     // Exchange authorization code for refresh and access tokens
@@ -104,13 +103,15 @@
             {
                 string stringifiedJson = await response.Content.ReadAsStringAsync();
                 var profile = JsonDocument.Parse(stringifiedJson);
-                string resourceName = profile.RootElement.GetProperty("resourceName").GetString();
-                Console.WriteLine($"[OC] resourceName = {resourceName}");
                 string userName = profile.RootElement.GetProperty("names")[0].GetProperty("displayName").GetString();
                 Console.WriteLine($"[OC] userName = {userName}");
-                playerDataService.currentPlayer.Name = userName;
+                string account_id = profile.RootElement.GetProperty("emailAddresses")[0].GetProperty("metadata")
+                    .GetProperty("source").GetProperty("id").GetString();
+                Console.WriteLine($"[OC] account_id = {account_id}");
 
-                // TODO: find element in json https://marcroussy.com/2020/08/17/deserialization-with-system-text-json/
+                // Identity confirmed, store user's data
+                sqliteDb.AddPlayer(account_id, userName, tData.access_token, tData.refresh_token);
+                playerDataService.accountId = account_id;
 
                 NavigationManager.NavigateTo("/");
             }
@@ -124,24 +125,6 @@
             _error = "Cannot get user name";
         }
     }
-
-    
-    @* private void OnSubmit()
-    {
-        if (!string.IsNullOrEmpty(userInput))
-        {
-            if (LobbyService.NameAvailable(userInput))
-            {
-                playerDataService.currentPlayer.Name = userInput;
-                playerDataService.currentPlayer.State = PlayerState.Ready;
-                NavigationManager.NavigateTo("/");
-            }
-            else
-            {
-                showWarning = true;
-            }
-        }
-    } *@
 
     private async Task RedirectToGoogleAuth()
     {

@@ -7,48 +7,55 @@ namespace OnlineChess.Data
     public class LobbyService
     {
         private LobbyHub _lobbyHub;
-        private Dictionary<string, PlayerData> PlayerMap = new Dictionary<string, PlayerData>();
+        private SQLiteDataService _sqliteDb;
+        private Dictionary<string, HashSet<string>> PlayerMap = new Dictionary<string, HashSet<string>>();
+        // PlayerMap <accountId, HashSet<connectionId>>
+        private List<string> _playersInLobby = new List<string>(); // updated each time player has joined or left
+        private Dictionary<string, string> AccountsLUT = new Dictionary<string, string>();
+        // AccountsLUT <connectionId, accountId>
 
-        public LobbyService(LobbyHub lobbyHub)
+        public LobbyService(LobbyHub lobbyHub, SQLiteDataService sqliteDb)
         {
             _lobbyHub = lobbyHub;
+            _sqliteDb = sqliteDb;
         }
 
-        public bool NameAvailable(string newName)
-        {
-            IEnumerable<string> name = 
-                from pdata in PlayerMap.Values.ToList()
-                where pdata.Name == newName
-                select pdata.Name;
-
-            if (name.Count() != 0)
-                return false;
-            return true;
-        }
-        public bool AddPlayer(string connectionId, PlayerData newPlayer)
+        public bool AddPlayer(string accountId, string connectionId, string playerName)
         {
             _lobbyHub.lobbyService = this;
 
-            if (PlayerMap.ContainsKey(newPlayer.Name))
-                return false;
+            if (PlayerMap.ContainsKey(accountId))
+            {
+                // same player has joined from a second device
+                PlayerMap[accountId].Add(connectionId);
+            }
+            else
+            {
+                // player joind the first time
+                PlayerMap.Add(accountId, new HashSet<string> { connectionId });
+                _playersInLobby.Add(playerName);
+            }
 
-            PlayerMap.Add(connectionId, newPlayer);
+            AccountsLUT.Add(connectionId, accountId);
 
-            IEnumerable<string> players = 
-                from pdata in PlayerMap.Values.ToList()
-                select pdata.Name;
-            _lobbyHub.RefreshPlayerList(players.ToList());
+            // notify other players
+            _lobbyHub.RefreshPlayerList(_playersInLobby);
             
             return true;
         }
 
         public void RemovePlayer(string connectionId)
         {
-            PlayerMap.Remove(connectionId);
-            IEnumerable<string> players = 
-                from pdata in PlayerMap.Values.ToList()
-                select pdata.Name;
-            _lobbyHub.RefreshPlayerList(players.ToList());
+            string accountId = AccountsLUT[connectionId];
+            AccountsLUT.Remove(connectionId);
+
+            PlayerMap[accountId].Remove(connectionId);
+            if (PlayerMap[accountId].Count() == 0){
+                PlayerMap.Remove(accountId);
+                _playersInLobby.Remove(_sqliteDb.GetPlayerName(accountId));
+            }
+
+            _lobbyHub.RefreshPlayerList(_playersInLobby);
         }
     }
 }
