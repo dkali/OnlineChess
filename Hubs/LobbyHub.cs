@@ -30,14 +30,14 @@ namespace OnlineChess.Server.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            Console.WriteLine($"User connected !!!!! {Context.ConnectionId}");
+            Console.WriteLine($"[SignalR] User connected {Context.ConnectionId}");
             await Groups.AddToGroupAsync(Context.ConnectionId, "SignalR Users");
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            Console.WriteLine($"User disconnected !!!!! {Context.ConnectionId}");
+            Console.WriteLine($"[SignalR] User disconnected {Context.ConnectionId}");
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, "SignalR Users");
             await base.OnDisconnectedAsync(exception);
             lobbyService.RemovePlayer(Context.ConnectionId);

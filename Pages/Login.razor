@@ -5,6 +5,8 @@
 @inject NavigationManager NavigationManager
 @inject IHttpClientFactory ClientFactory
 @inject SQLiteDataService sqliteDb
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedLocalStorage BrowserStorage
 @using System
 @using System.Text
 @using System.Text.Json
@@ -105,13 +107,15 @@
                 var profile = JsonDocument.Parse(stringifiedJson);
                 string userName = profile.RootElement.GetProperty("names")[0].GetProperty("displayName").GetString();
                 Console.WriteLine($"[OC] userName = {userName}");
-                string account_id = profile.RootElement.GetProperty("emailAddresses")[0].GetProperty("metadata")
+                string accountId = profile.RootElement.GetProperty("emailAddresses")[0].GetProperty("metadata")
                     .GetProperty("source").GetProperty("id").GetString();
-                Console.WriteLine($"[OC] account_id = {account_id}");
+                Console.WriteLine($"[OC] account_id = {accountId}");
 
                 // Identity confirmed, store user's data
-                sqliteDb.AddPlayer(account_id, userName, tData.access_token, tData.refresh_token);
-                playerDataService.accountId = account_id;
+                sqliteDb.AddPlayer(accountId, userName, tData.access_token, tData.refresh_token);
+                playerDataService.accountId = accountId;
+                // save cookie
+                await BrowserStorage.SetAsync("accountId", accountId);
 
                 NavigationManager.NavigateTo("/");
             }
