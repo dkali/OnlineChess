@@ -1,0 +1,55 @@
+@using OnlineChess.Data
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject NavigationManager NavigationManager
+@inject ProtectedLocalStorage BrowserStorage
+@inject PlayerDataService playerDataService
+@inject LobbyService lobbyService
+@inject SQLiteDataService sqliteDb
+
+<h1>Hello, @PlayerName!</h1>
+@if (!string.IsNullOrEmpty(PlayerName))
+{
+    <div>
+        <button @onclick="Logout">Logout</button>
+    </div>
+}
+
+Active Players:
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Player name</th>
+            @* <th>Connection ID </th>
+            <th>Status</th> *@
+            @* <th>Send Invite</th> *@
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var playerName in PlayerList)
+        {
+            <tr>
+                <td>@playerName</td>
+                @* <td>@player.ConnectionId</td>
+                <td>@player.State</td> *@
+                @* <td>@forecast.Summary</td> *@
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code
+{
+    [Parameter]
+    public List<string> PlayerList { get; set; }
+    [Parameter]
+    public string PlayerName { get; set; }
+
+    private async Task Logout()
+    {
+        await BrowserStorage.DeleteAsync("accountId");
+        playerDataService.accountId = "";
+        playerDataService.playerState = PlayerState.None;
+        NavigationManager.NavigateTo("/login");
+    }
+}

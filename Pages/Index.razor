@@ -1,55 +1,31 @@
 @page "/"
 
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using System
+@using Microsoft.AspNetCore.SignalR.Client
+@using OnlineChess.Data
 @inject PlayerDataService playerDataService
 @inject LobbyService lobbyService
 @inject NavigationManager NavigationManager
 @inject IHttpClientFactory ClientFactory
 @inject SQLiteDataService sqliteDb
-@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @inject ProtectedLocalStorage BrowserStorage
-@using System
-@using Microsoft.AspNetCore.SignalR.Client
-@using OnlineChess.Data
 @implements IAsyncDisposable
 
-<h1>Hello, @playerName!</h1>
-@if (!string.IsNullOrEmpty(playerName))
+@switch (playerDataService.playerState)
 {
-    <div>
-        <button @onclick="Logout">Logout</button>
-    </div>
+    case PlayerState.InLobby:
+        <Lobby PlayerList="@_playerList" PlayerName="@playerName"></Lobby>
+        break;
+
+    case PlayerState.InGame:
+        break;
 }
-
-Active Players:
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Player name</th>
-            @* <th>Connection ID </th>
-            <th>Status</th> *@
-            @* <th>Send Invite</th> *@
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var playerName in playerList)
-        {
-            <tr>
-                <td>@playerName</td>
-                @* <td>@player.ConnectionId</td>
-                <td>@player.State</td> *@
-                @* <td>@forecast.Summary</td> *@
-            </tr>
-        }
-    </tbody>
-</table>    
-
-@* <SurveyPrompt Title="How is Blazor working for you?" /> *@
 
 @code {
     private HubConnection hubConnection;
-    public string playerName;
-    private List<string> playerList = new List<string>();
+    private List<string> _playerList = new List<string>();
+    private string playerName;
 
     //protected override async Task OnInitializedAsync()
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -57,38 +33,42 @@ Active Players:
         if (!firstRender)
             return;
 
-        var result = await BrowserStorage.GetAsync<string>("accountId");
-        string accountId = result.Success ? result.Value : "";
-        
-        if (string.IsNullOrEmpty(accountId))
+        if (string.IsNullOrEmpty(playerDataService.accountId))
         {
-            Console.WriteLine("[OC] redirect to login");
-            NavigationManager.NavigateTo("/login");
-        }
-        else
-        {
-            playerDataService.accountId = accountId;
-            playerName = sqliteDb.GetPlayerName(playerDataService.accountId);
-
-            hubConnection = new HubConnectionBuilder()
-                .WithUrl(NavigationManager.ToAbsoluteUri("/lobbyhub"))
-                .Build();
-
-            hubConnection.On<List<string>>("RefreshPlayerList", (players) =>
+            // read cookie
+            var result = await BrowserStorage.GetAsync<string>("accountId");
+            string accountId = result.Success ? result.Value : "";
+            
+            if (string.IsNullOrEmpty(accountId))
             {
-                playerList = players;
-                StateHasChanged();
-            });
-
-            await hubConnection.StartAsync();
-
-            if (!string.IsNullOrEmpty(playerName))
-                lobbyService.AddPlayer(playerDataService.accountId, hubConnection.ConnectionId, playerName);
+                Console.WriteLine("[OC] redirect to login");
+                NavigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                playerDataService.accountId = accountId;
+            }
         }
-    }
 
-    @* async Task Send() =>
-        await hubConnection.SendAsync("SendMessage", userInput, messageInput); *@
+        playerName = sqliteDb.GetPlayerName(playerDataService.accountId);
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/lobbyhub"))
+            .Build();
+
+        hubConnection.On<List<string>>("RefreshPlayerList", (players) =>
+        {
+            _playerList = players;
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+
+        if (!string.IsNullOrEmpty(playerName))
+            lobbyService.AddPlayer(playerDataService.accountId, hubConnection.ConnectionId, playerName);
+        
+        playerDataService.playerState = PlayerState.InLobby;
+    }
 
     public bool IsConnected =>
         hubConnection.State == HubConnectionState.Connected;
@@ -99,13 +79,5 @@ Active Players:
         {
             await hubConnection.DisposeAsync();
         }
-    }
-
-    private async Task Logout()
-    {
-        await BrowserStorage.DeleteAsync("accountId");
-        playerDataService.accountId = "";
-        playerName = "";
-        NavigationManager.NavigateTo("/login");
     }
 }
