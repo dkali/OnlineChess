@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace OnlineChess.Data
 {
-    public enum PlayerState
+    public enum PlayerUiState
     {
         None,
         InLobby,
@@ -14,12 +14,11 @@ namespace OnlineChess.Data
     public class PlayerDataService
     {
         public string accountId;
-        public int? sessionId = null;
-        public PlayerState playerState { get; set; }
+        public PlayerUiState playerUiState { get; set; }
 
         public PlayerDataService()
         {
-            playerState = PlayerState.None;
+            playerUiState = PlayerUiState.None;
         }
     }
 }

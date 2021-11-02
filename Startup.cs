@@ -44,6 +44,7 @@ namespace OnlineChess
             });
             // Add your context to your services
             services.AddEntityFrameworkSqlite().AddDbContext<ChessDataContext>();
+            services.AddScoped<NotifierService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

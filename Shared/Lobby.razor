@@ -5,6 +5,7 @@
 @inject PlayerDataService playerDataService
 @inject LobbyService lobbyService
 @inject SQLiteDataService sqliteDb
+@inject NotifierService Notifier
 
 <h1>Hello, @PlayerName!</h1>
 @if (!string.IsNullOrEmpty(PlayerName))
@@ -20,19 +21,47 @@ Active Players:
     <thead>
         <tr>
             <th>Player name</th>
-            @* <th>Connection ID </th>
-            <th>Status</th> *@
-            @* <th>Send Invite</th> *@
+            <th>State</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var playerName in PlayerList)
+        @foreach (var accountId in PlayerList)
         {
             <tr>
-                <td>@playerName</td>
-                @* <td>@player.ConnectionId</td>
-                <td>@player.State</td> *@
-                @* <td>@forecast.Summary</td> *@
+                <td>@sqliteDb.GetPlayerName(accountId)</td>
+                <td>
+                    @if (lobbyService.PlayerInGameSession(accountId))
+                    {
+                        @switch (lobbyService.GetSessionState(accountId))
+                        {
+                            case SessionState.Preparation:
+                                <div>Ready to start</div>
+                                break;
+
+                            case SessionState.InGame:
+                                <div>In Game</div>
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        <div>Online</div>
+                    }
+                </td>
+                <td>
+                    @if (accountId == playerDataService.accountId)
+                    {
+                        <Button @onclick="CreateGame">Create Game</Button>
+                    }
+                    else
+                    {
+                        @if (lobbyService.PlayerInGameSession(accountId))
+                        {
+                            <Button>Join Game</Button>
+                        }
+                    }
+                </td>
             </tr>
         }
     </tbody>
@@ -44,12 +73,18 @@ Active Players:
     public List<string> PlayerList { get; set; }
     [Parameter]
     public string PlayerName { get; set; }
-
     private async Task Logout()
     {
         await BrowserStorage.DeleteAsync("accountId");
         playerDataService.accountId = "";
-        playerDataService.playerState = PlayerState.None;
+        playerDataService.playerUiState = PlayerUiState.None;
         NavigationManager.NavigateTo("/login");
+    }
+
+    private async Task CreateGame()
+    {
+        lobbyService.CreateGameSession(playerDataService.accountId);
+        playerDataService.playerUiState = PlayerUiState.InGame;
+        await Notifier.Update("SessionChanged", 0);
     }
 }

@@ -10,15 +10,21 @@
 @inject IHttpClientFactory ClientFactory
 @inject SQLiteDataService sqliteDb
 @inject ProtectedLocalStorage BrowserStorage
+@inject NotifierService Notifier
 @implements IAsyncDisposable
 
-@switch (playerDataService.playerState)
+@switch (playerDataService.playerUiState)
 {
-    case PlayerState.InLobby:
+    case PlayerUiState.None:
+        <p><em>Loading...</em></p>
+        break;
+
+    case PlayerUiState.InLobby:
         <Lobby PlayerList="@_playerList" PlayerName="@playerName"></Lobby>
         break;
 
-    case PlayerState.InGame:
+    case PlayerUiState.InGame:
+        <div>Game field TBD</div>
         break;
 }
 
@@ -26,8 +32,13 @@
     private HubConnection hubConnection;
     private List<string> _playerList = new List<string>();
     private string playerName;
+    @* private (string key, int value) lastNotification; *@
 
-    //protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
+    {
+        Notifier.Notify += OnNotify;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
@@ -63,15 +74,22 @@
         });
 
         await hubConnection.StartAsync();
-
-        if (!string.IsNullOrEmpty(playerName))
-            lobbyService.AddPlayer(playerDataService.accountId, hubConnection.ConnectionId, playerName);
-        
-        playerDataService.playerState = PlayerState.InLobby;
+        lobbyService.AddPlayer(playerDataService.accountId, hubConnection.ConnectionId);
+        playerDataService.playerUiState = PlayerUiState.InLobby;
     }
 
     public bool IsConnected =>
         hubConnection.State == HubConnectionState.Connected;
+
+    public async Task OnNotify(string key, int value)
+    {
+        await InvokeAsync(() =>
+        {
+            @* lastNotification = (key, value); *@
+            StateHasChanged();
+            lobbyService.RefreshPLayerList();
+        });
+    }
 
     public async ValueTask DisposeAsync()
     {
@@ -79,5 +97,6 @@
         {
             await hubConnection.DisposeAsync();
         }
+        Notifier.Notify -= OnNotify;
     }
 }
