@@ -75,7 +75,9 @@
 
         await hubConnection.StartAsync();
         lobbyService.AddPlayer(playerDataService.accountId, hubConnection.ConnectionId);
-        playerDataService.playerUiState = PlayerUiState.InLobby;
+
+        playerDataService.playerUiState = lobbyService.PlayerInGameSession(playerDataService.accountId) ?
+            PlayerUiState.InGame : PlayerUiState.InLobby;
     }
 
     public bool IsConnected =>

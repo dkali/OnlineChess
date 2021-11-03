@@ -7,8 +7,9 @@ namespace OnlineChess.Data
 {
     public class PlayerData
     {
-        public HashSet<string> signalRConnections = new HashSet<string>();
-        public string gameSession = "";
+        public HashSet<string> SignalRConnections = new HashSet<string>();
+        public string GameSession = "";
+        public bool Online;
     }
 
     public class LobbyService
@@ -36,14 +37,20 @@ namespace OnlineChess.Data
 
             if (_playerMap.ContainsKey(accountId))
             {
-                // same player has joined from a second device
-                _playerMap[accountId].signalRConnections.Add(connectionId);
+                // same player has joined from a second device, or refreshed the page
+                _playerMap[accountId].SignalRConnections.Add(connectionId);
+                _playerMap[accountId].Online = true;
+                if (!_playersInLobby.Contains(accountId))
+                {
+                    _playersInLobby.Add(accountId);
+                }
             }
             else
             {
                 // player joind the first time
                 PlayerData pData = new PlayerData();
-                pData.signalRConnections.Add(connectionId);
+                pData.Online = true;
+                pData.SignalRConnections.Add(connectionId);
                 _playerMap.Add(accountId, pData);
                 _playersInLobby.Add(accountId);
             }
@@ -61,23 +68,25 @@ namespace OnlineChess.Data
             string accountId = _accountsLUT[connectionId];
             _accountsLUT.Remove(connectionId);
 
-            _playerMap[accountId].signalRConnections.Remove(connectionId);
-            if (_playerMap[accountId].signalRConnections.Count() == 0){
-                _playerMap.Remove(accountId);
+            _playerMap[accountId].SignalRConnections.Remove(connectionId);
+            if (_playerMap[accountId].SignalRConnections.Count() == 0){
+                _playerMap[accountId].Online = false;
                 _playersInLobby.Remove(accountId);
+                _lobbyHub.RefreshPlayerList(_playersInLobby);
             }
-
-            _lobbyHub.RefreshPlayerList(_playersInLobby);
         }
 
         public bool PlayerInGameSession(string accountId)
         {
-            return !string.IsNullOrEmpty(_playerMap[accountId].gameSession);
+            // player has reference to a game session,
+            // and that session still alive
+            return !string.IsNullOrEmpty(_playerMap[accountId].GameSession) &&
+                _gameSessions.ContainsKey(_playerMap[accountId].GameSession);
         }
 
         public SessionState GetSessionState(string accountId)
         {
-            return _gameSessions[_playerMap[accountId].gameSession].SessionState;
+            return _gameSessions[_playerMap[accountId].GameSession].SessionState;
         }
 
         public void CreateGameSession(string accountId)
@@ -87,7 +96,7 @@ namespace OnlineChess.Data
             gSession.Players.Add(accountId);
 
             _gameSessions[gSession.SessionId] = gSession;
-            _playerMap[accountId].gameSession = gSession.SessionId;
+            _playerMap[accountId].GameSession = gSession.SessionId;
         }
 
         public void RefreshPLayerList()
