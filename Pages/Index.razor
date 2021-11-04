@@ -19,6 +19,7 @@
 {
     case PlayerUiState.None:
         <p><em>Loading...</em></p>
+        <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" Style="margin-bottom: 20px" ></RadzenProgressBar>
         break;
 
     case PlayerUiState.InLobby:
@@ -26,7 +27,7 @@
         break;
 
     case PlayerUiState.InGame:
-        <div>Game field TBD</div>
+        <GameView></GameView>
         break;
 }
 

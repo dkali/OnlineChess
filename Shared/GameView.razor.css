@@ -1,0 +1,13 @@
+.black-cell {
+    background-color:#9F7950;
+    border:solid 1px #000;
+    text-align: center;
+}
+.white-cell {
+    background-color: #F4E9DD;
+    border:solid 1px #000;
+    text-align: center;
+}
+.border-cell {
+    text-align: center;
+}

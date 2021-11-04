@@ -8,7 +8,7 @@ namespace OnlineChess.Data
     public class PlayerData
     {
         public HashSet<string> SignalRConnections = new HashSet<string>();
-        public string GameSession = "";
+        public string GameSessionId = "";
         public bool Online;
     }
 
@@ -80,13 +80,18 @@ namespace OnlineChess.Data
         {
             // player has reference to a game session,
             // and that session still alive
-            return !string.IsNullOrEmpty(_playerMap[accountId].GameSession) &&
-                _gameSessions.ContainsKey(_playerMap[accountId].GameSession);
+            return !string.IsNullOrEmpty(_playerMap[accountId].GameSessionId) &&
+                _gameSessions.ContainsKey(_playerMap[accountId].GameSessionId);
+        }
+
+        public string GetSessionId(string accountId)
+        {
+            return _playerMap[accountId].GameSessionId;
         }
 
         public SessionState GetSessionState(string accountId)
         {
-            return _gameSessions[_playerMap[accountId].GameSession].SessionState;
+            return _gameSessions[_playerMap[accountId].GameSessionId].SessionState;
         }
 
         public void CreateGameSession(string accountId)
@@ -96,12 +101,17 @@ namespace OnlineChess.Data
             gSession.Players.Add(accountId);
 
             _gameSessions[gSession.SessionId] = gSession;
-            _playerMap[accountId].GameSession = gSession.SessionId;
+            _playerMap[accountId].GameSessionId = gSession.SessionId;
         }
 
         public void RefreshPLayerList()
         {
             _lobbyHub.RefreshPlayerList(_playersInLobby);
+        }
+
+        public FieldData GetSessionField(string sessionId)
+        {
+            return _gameSessions[sessionId].Field;
         }
     }
 }

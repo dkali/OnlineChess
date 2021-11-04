@@ -12,15 +12,17 @@ namespace OnlineChess.Data
     public class GameSession
     {
         public string SessionId { get; set; }
-        public string OwnerId {get; set; }
+        public string OwnerId { get; set; }
         public List<string> Players { get; set; }
-        public SessionState SessionState {get; set; }
+        public SessionState SessionState { get; set; }
+        public FieldData Field { get; set; }
 
         public GameSession()
         {
             Players = new List<string>();
             SessionId = Guid.NewGuid().ToString();
             SessionState = SessionState.Preparation;
+            Field = new FieldData();
         }
     }
 }
