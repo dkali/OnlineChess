@@ -4,6 +4,7 @@
 @using System
 @using Microsoft.AspNetCore.SignalR.Client
 @using OnlineChess.Data
+@using Microsoft.Extensions.Logging
 @inject PlayerDataService playerDataService
 @inject LobbyService lobbyService
 @inject NavigationManager NavigationManager
@@ -11,6 +12,7 @@
 @inject SQLiteDataService sqliteDb
 @inject ProtectedLocalStorage BrowserStorage
 @inject NotifierService Notifier
+@inject ILogger<Index> logger
 @implements IAsyncDisposable
 
 @switch (playerDataService.playerUiState)
@@ -52,7 +54,7 @@
             
             if (string.IsNullOrEmpty(accountId))
             {
-                Console.WriteLine("[OC] redirect to login");
+                logger.LogInformation("[OC] redirect to login");
                 NavigationManager.NavigateTo("/login");
             }
             else

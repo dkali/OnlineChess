@@ -10,7 +10,8 @@
   * OAuth 2.0 https://developers.google.com/identity/protocols/oauth2/web-server 
   * people API https://developers.google.com/people/api/rest/v1/people/get
 * Cookies 
-  * LocalStorage https://www.thomasclaudiushuber.com/2021/04/19/store-data-of-your-blazor-app-in-the-local-storage-and-in-the-session-storage/ 
+  * LocalStorage https://www.thomasclaudiushuber.com/2021/04/19/store-data-of-your-blazor-app-in-the-local-storage-and-in-the-session-storage/
+* UI Framework https://blazor.radzen.com/
 
 
 ## Development settings

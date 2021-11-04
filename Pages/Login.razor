@@ -1,18 +1,20 @@
 ﻿@page "/login"
 
-@inject PlayerDataService playerDataService
-@inject LobbyService LobbyService
-@inject NavigationManager NavigationManager
-@inject IHttpClientFactory ClientFactory
-@inject SQLiteDataService sqliteDb
-@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
-@inject ProtectedLocalStorage BrowserStorage
 @using System
 @using System.Text
 @using System.Text.Json
 @using System.Net.Http.Headers
 @using Microsoft.AspNetCore.WebUtilities
 @using OnlineChess.Data
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using Microsoft.Extensions.Logging
+@inject PlayerDataService playerDataService
+@inject LobbyService LobbyService
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory ClientFactory
+@inject SQLiteDataService sqliteDb
+@inject ProtectedLocalStorage BrowserStorage
+@inject ILogger<Login> logger
 
 <h3>Welcome to Online Chess</h3>
 <div>
@@ -40,7 +42,7 @@
             if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("code", out var _GoogleCode))
             {
                 // user have approved our consent and granted permissions
-                Console.WriteLine("[OC] 'Code' query parametr detected");
+                logger.LogInformation("[OC] 'Code' query parametr detected");
                 _authorizationCode = _GoogleCode;
 
                 RequestTokens();
@@ -77,7 +79,7 @@
         {
             var responseStream = await response.Content.ReadAsStreamAsync();
             tData = await JsonSerializer.DeserializeAsync<OAuthToken>(responseStream);
-            Console.WriteLine($"[OC] Got access token from Google: {tData.access_token}");
+            logger.LogInformation($"[OC] Got access token from Google: {tData.access_token}");
 
             await RequestForUserInfo(tData);
         }
@@ -99,17 +101,17 @@
 
         if (response.IsSuccessStatusCode)
         {
-            Console.WriteLine("[OC] Got user name");
+            logger.LogInformation("[OC] Got user name");
 
             try
             {
                 string stringifiedJson = await response.Content.ReadAsStringAsync();
                 var profile = JsonDocument.Parse(stringifiedJson);
                 string userName = profile.RootElement.GetProperty("names")[0].GetProperty("displayName").GetString();
-                Console.WriteLine($"[OC] userName = {userName}");
+                logger.LogInformation($"[OC] userName = {userName}");
                 string accountId = profile.RootElement.GetProperty("emailAddresses")[0].GetProperty("metadata")
                     .GetProperty("source").GetProperty("id").GetString();
-                Console.WriteLine($"[OC] account_id = {accountId}");
+                logger.LogInformation($"[OC] account_id = {accountId}");
 
                 // Identity confirmed, store user's data
                 sqliteDb.AddPlayer(accountId, userName, tData.access_token, tData.refresh_token);
@@ -139,7 +141,7 @@
         sb.Append("&scope=profile email openid");
         sb.Append("&access_type=offline");
 
-        Console.WriteLine("[OC] Redirect to Google OAuth");
+        logger.LogInformation("[OC] Redirect to Google OAuth");
         NavigationManager.NavigateTo(sb.ToString());
     }
 }

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Generic;
 using OnlineChess.Data;
+using Microsoft.Extensions.Logging;
 
 namespace OnlineChess.Server.Hubs
 {
@@ -10,6 +11,11 @@ namespace OnlineChess.Server.Hubs
     {
         private List<string> _players;
         public LobbyService lobbyService;
+        private ILogger<LobbyHub> _logger;
+        public LobbyHub(ILogger<LobbyHub> logger)
+        {
+            _logger = logger;
+        }
 
         // public async Task SendMessage(string user, string message)
         // {
@@ -30,14 +36,14 @@ namespace OnlineChess.Server.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            Console.WriteLine($"[SignalR] User connected {Context.ConnectionId}");
+            _logger.LogInformation($"[SignalR] User connected {Context.ConnectionId}");
             await Groups.AddToGroupAsync(Context.ConnectionId, "SignalR Users");
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            Console.WriteLine($"[SignalR] User disconnected {Context.ConnectionId}");
+            _logger.LogInformation($"[SignalR] User disconnected {Context.ConnectionId}");
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, "SignalR Users");
             await base.OnDisconnectedAsync(exception);
             lobbyService.RemovePlayer(Context.ConnectionId);
