@@ -1,13 +1,14 @@
-.black-cell {
-    background-color:#9F7950;
-    border:solid 1px #000;
-    text-align: center;
-}
-.white-cell {
-    background-color: #F4E9DD;
-    border:solid 1px #000;
-    text-align: center;
-}
-.border-cell {
-    text-align: center;
+.chess-field { grid-area: ChessField; }
+.stats { grid-area: Stats; }
+.chat { grid-area: Chat; }
+
+.grid-container {
+  display: grid;
+  grid-template-areas:
+    'ChessField ChessField Stats'
+    'ChessField ChessField Chat'
+    'ChessField ChessField Chat'
+    'ChessField ChessField Chat';
+  grid-gap: 10px;
+  padding: 10px;
 }

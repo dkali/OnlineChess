@@ -89,6 +89,11 @@ namespace OnlineChess.Data
             return _playerMap[accountId].GameSessionId;
         }
 
+        public GameSession GetGameSession(string accountId)
+        {
+            return _gameSessions[_playerMap[accountId].GameSessionId];
+        }
+
         public SessionState GetSessionState(string accountId)
         {
             return _gameSessions[_playerMap[accountId].GameSessionId].SessionState;

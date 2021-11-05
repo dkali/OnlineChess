@@ -1,0 +1,29 @@
+@using System.Collections.Generic
+@using OnlineChess.Data
+@inject LobbyService lobbyService
+@inject PlayerDataService playerDataService
+@inject SQLiteDataService sqliteDb
+
+<div class="debug">
+    <div>Host: @sqliteDb.GetPlayerName(playerDataService.accountId)</div>
+    <div>White player: TBD</div>
+
+    <div>players in room:</div>
+    @foreach (string playetId in GSession.Players)
+    {
+        <div> * @sqliteDb.GetPlayerName(playetId)</div>
+    }
+</div>
+
+@code
+{
+    public string Host { get; set; }
+    public List<string> Players { get; set; }
+    private GameSession GSession { get; set; }
+
+    protected override void OnInitialized()
+    {
+       GSession = lobbyService.GetGameSession(playerDataService.accountId);
+       
+    }
+}

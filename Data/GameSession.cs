@@ -13,7 +13,7 @@ namespace OnlineChess.Data
     {
         public string SessionId { get; set; }
         public string OwnerId { get; set; }
-        public List<string> Players { get; set; }
+        public List<string> Players { get; set; } // account IDs
         public SessionState SessionState { get; set; }
         public FieldData Field { get; set; }
 
