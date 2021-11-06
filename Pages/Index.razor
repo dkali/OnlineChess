@@ -27,7 +27,7 @@
         break;
 
     case PlayerUiState.InGame:
-        <GameView></GameView>
+        <GameView @ref="_gameViewComponent"></GameView>
         break;
 }
 
@@ -36,6 +36,7 @@
     private List<string> _playerList = new List<string>();
     private string playerName;
     @* private (string key, int value) lastNotification; *@
+    private GameView _gameViewComponent;
 
     protected override void OnInitialized()
     {
@@ -76,6 +77,11 @@
             StateHasChanged();
         });
 
+        hubConnection.On<string>("ReRenderGameView", (targetComponent) => 
+        {
+            _gameViewComponent.ReRender(targetComponent);
+        });
+
         await hubConnection.StartAsync();
         lobbyService.AddPlayer(playerDataService.accountId, hubConnection.ConnectionId);
 
@@ -92,7 +98,7 @@
         {
             @* lastNotification = (key, value); *@
             StateHasChanged();
-            lobbyService.RefreshPLayerList();
+            lobbyService.RefreshPLayerList(); // may be not needed
         });
     }
 

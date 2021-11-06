@@ -58,7 +58,7 @@ Active Players:
                     {
                         @if (lobbyService.PlayerInGameSession(accountId))
                         {
-                            <Button>Join Game</Button>
+                            <Button @onclick="() => JoinGame(accountId)">Join Game</Button>
                         }
                     }
                 </td>
@@ -84,6 +84,13 @@ Active Players:
     private async Task CreateGame()
     {
         lobbyService.CreateGameSession(playerDataService.accountId);
+        playerDataService.playerUiState = PlayerUiState.InGame;
+        await Notifier.Update("SessionChanged", 0);
+    }
+
+    private async Task JoinGame(string hostId)
+    {
+        lobbyService.JoinGameSession(playerDataService.accountId, hostId);
         playerDataService.playerUiState = PlayerUiState.InGame;
         await Notifier.Update("SessionChanged", 0);
     }

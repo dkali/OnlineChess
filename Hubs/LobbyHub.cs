@@ -54,5 +54,11 @@ namespace OnlineChess.Server.Hubs
             _players = players;
             await Clients.All.SendAsync("RefreshPlayerList", players);
         }
+
+        // TODO add SignalR group as parameter
+        public async Task ReRenderGameView(string targetComponent)
+        {
+            await Clients.All.SendAsync("ReRenderGameView", targetComponent);
+        }
     }
 }

@@ -109,6 +109,14 @@ namespace OnlineChess.Data
             _playerMap[accountId].GameSessionId = gSession.SessionId;
         }
 
+        public void JoinGameSession(string accountId, string hostId)
+        {
+            GameSession gSession = GetGameSession(hostId);
+            gSession.Players.Add(accountId);
+            _playerMap[accountId].GameSessionId = gSession.SessionId;
+            _lobbyHub.ReRenderGameView("StatsField");
+        }
+
         public void RefreshPLayerList()
         {
             _lobbyHub.RefreshPlayerList(_playersInLobby);

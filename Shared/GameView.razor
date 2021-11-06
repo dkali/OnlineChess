@@ -4,7 +4,7 @@
 
 <div class="grid-container">
   <div class="chess-field"><ChessField /></div>
-  <div class="stats"><StatsField /></div>  
+  <div class="stats"><StatsField @ref="_statsField"/></div>  
   <div class="chat">Chat</div>
 </div>
 
@@ -13,9 +13,20 @@
     private bool StartFromWhite = true;
     public FieldData Field { get; set; }
     private string SessionId { get; set; }
+    private StatsField _statsField;
     protected override void OnInitialized()
     {
         SessionId = lobbyService.GetSessionId(playerDataService.accountId);
         Field = lobbyService.GetSessionField(SessionId);
+    }
+
+    public void ReRender(string target)
+    {
+        switch (target)
+        {
+            case "StatsField":
+                _statsField.ReRender();
+                break;
+        }
     }
 }
