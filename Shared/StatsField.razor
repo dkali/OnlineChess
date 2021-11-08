@@ -6,12 +6,32 @@
 
 <div class="debug">
     <div>Host: @sqliteDb.GetPlayerName(GSession.OwnerId)</div>
-    <div>White player: TBD</div>
+    @if (GSession.SessionState == SessionState.Preparation)
+    {
+        @if (playerDataService.accountId == GSession.OwnerId)
+        {
+            <div>Select oponent: <RadzenDropDown AllowClear="true" TValue="string" Style="width:300px" 
+                                    Data=@(GSession.Players.
+                                        Where(playerId => playerId != GSession.OwnerId).
+                                        Select(playerId => @sqliteDb.GetPlayerName(playerId)))
+                                    Change=@(args => OnPlayerChange(args, "DropDown")) /></div>
+            <div>Select White player: <RadzenDropDown AllowClear="true" TValue="string" Style="width:300px"
+                                    Data=@(new List<string> {GSession.OwnerId, oponentId}.
+                                        Select(playerId => @sqliteDb.GetPlayerName(playerId)))
+                                    Change=@(args => OnSideChange(args, "DropDown")) /></div>
+            <Button @onclick="StartGame" disabled="@_startGameBtnDisabled">Start Game</Button>
+        }
+    }
+    else
+    {
+        <div>White player: @sqliteDb.GetPlayerName(@GSession.WhitePlayer)</div>
+        <div>Black player: @sqliteDb.GetPlayerName(@GSession.BlackPlayer)</div>
+    }
 
     <div>players in room:</div>
-    @foreach (string playetId in GSession.Players)
+    @foreach (string playerId in GSession.Players)
     {
-        <div> * @sqliteDb.GetPlayerName(playetId)</div>
+        <div> * @sqliteDb.GetPlayerName(playerId)</div>
     }
     <Button @onclick="LeaveGame">Leave Game</Button>
 </div>
@@ -21,10 +41,17 @@
     public string Host { get; set; }
     public List<string> Players { get; set; }
     private GameSession GSession { get; set; }
+    private string oponentId { get; set; }
+    private string oponentName { get; set; }
+    private string _whitePlayerId { get; set; }
+    private bool _startGameBtnDisabled, _oponentSelected, _sideSelected;
 
     protected override void OnInitialized()
     {
-       GSession = lobbyService.GetGameSession(playerDataService.accountId);  
+       GSession = lobbyService.GetGameSession(playerDataService.accountId);
+       _startGameBtnDisabled = true;
+       _oponentSelected = false;
+       _sideSelected = false;
     }
 
     public void ReRender()
@@ -44,5 +71,36 @@
         {
             // TODO show modal that game ended since one of the key players left
         }
+    }
+
+    private async Task StartGame()
+    {
+        GSession.WhitePlayer = _whitePlayerId == GSession.OwnerId ? GSession.OwnerId : oponentId;
+        GSession.BlackPlayer = _whitePlayerId == GSession.OwnerId ? oponentId : GSession.OwnerId;
+        lobbyService.StartGame(GSession.SessionId);
+    }
+
+    private void OnPlayerChange(object value, string name)
+    {
+        if (value != null)
+        {
+            oponentName = value.ToString();
+            oponentId = GSession.Players.Where(playerId => 
+                @sqliteDb.GetPlayerName(playerId) == oponentName).ToList()[0];
+            _oponentSelected = true;
+        }
+        else
+        {
+            oponentName = string.Empty;
+            _oponentSelected = true;
+        }
+        _startGameBtnDisabled = !(_oponentSelected && _sideSelected);
+    }
+
+    private void OnSideChange(object value, string name)
+    {
+        _sideSelected = value == null ? false : true;
+        _whitePlayerId = oponentId;
+        _startGameBtnDisabled = !(_oponentSelected && _sideSelected);
     }
 }

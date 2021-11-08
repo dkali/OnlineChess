@@ -16,6 +16,8 @@ namespace OnlineChess.Data
         public List<string> Players { get; set; } // account IDs
         public SessionState SessionState { get; set; }
         public FieldData Field { get; set; }
+        public string WhitePlayer { get; set; }
+        public string BlackPlayer { get; set; }
 
         public GameSession()
         {
