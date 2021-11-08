@@ -49,16 +49,26 @@ namespace OnlineChess.Server.Hubs
             lobbyService.RemovePlayer(Context.ConnectionId);
         }
 
-        public async Task RefreshPlayerList(List<string> players)
+        public async Task RefreshPlayerListWith(List<string> players)
         {
             _players = players;
             await Clients.All.SendAsync("RefreshPlayerList", players);
+        }
+
+        public async Task RefreshPlayerList()
+        {
+            await Clients.All.SendAsync("RefreshPlayerList", _players);
         }
 
         // TODO add SignalR group as parameter
         public async Task ReRenderGameView(string targetComponent)
         {
             await Clients.All.SendAsync("ReRenderGameView", targetComponent);
+        }
+
+        public async Task KickPlayer(string playerId)
+        {
+            await Clients.All.SendAsync("KickPlayer", playerId);
         }
     }
 }

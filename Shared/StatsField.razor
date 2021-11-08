@@ -13,6 +13,7 @@
     {
         <div> * @sqliteDb.GetPlayerName(playetId)</div>
     }
+    <Button @onclick="LeaveGame">Leave Game</Button>
 </div>
 
 @code
@@ -29,5 +30,19 @@
     public void ReRender()
     {
         StateHasChanged();
+    }
+
+    private async Task LeaveGame()
+    {
+        if (GSession.SessionState == SessionState.Preparation)
+        {
+            // we can leave, no harm done
+            playerDataService.playerUiState = PlayerUiState.InLobby;
+            lobbyService.LeaveGame(GSession.SessionId, playerDataService.accountId);
+        }
+        else
+        {
+            // TODO show modal that game ended since one of the key players left
+        }
     }
 }

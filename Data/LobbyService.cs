@@ -58,7 +58,7 @@ namespace OnlineChess.Data
             _accountsLUT.Add(connectionId, accountId);
 
             // notify other players
-            _lobbyHub.RefreshPlayerList(_playersInLobby);
+            _lobbyHub.RefreshPlayerListWith(_playersInLobby);
             
             return true;
         }
@@ -72,7 +72,7 @@ namespace OnlineChess.Data
             if (_playerMap[accountId].SignalRConnections.Count() == 0){
                 _playerMap[accountId].Online = false;
                 _playersInLobby.Remove(accountId);
-                _lobbyHub.RefreshPlayerList(_playersInLobby);
+                _lobbyHub.RefreshPlayerListWith(_playersInLobby);
             }
         }
 
@@ -117,9 +117,33 @@ namespace OnlineChess.Data
             _lobbyHub.ReRenderGameView("StatsField");
         }
 
+        public void LeaveGame(string sessionId, string accountId)
+        {
+            GameSession gameSession = _gameSessions[sessionId];
+            if (gameSession.OwnerId == accountId) // TODO, add case for second player
+            {
+                // owner left, terminate game session
+                foreach (string playerId in gameSession.Players)
+                {
+                    _playerMap[playerId].GameSessionId = string.Empty;
+                    _lobbyHub.KickPlayer(playerId);
+                }
+                _gameSessions.Remove(sessionId);
+            }
+            else
+            {
+                // observer left, never mind
+                gameSession.Players.Remove(accountId);
+                _playerMap[accountId].GameSessionId = string.Empty;
+                _lobbyHub.ReRenderGameView("StatsField");
+
+            }
+            _lobbyHub.RefreshPlayerList();
+        }
+
         public void RefreshPLayerList()
         {
-            _lobbyHub.RefreshPlayerList(_playersInLobby);
+            _lobbyHub.RefreshPlayerListWith(_playersInLobby);
         }
 
         public FieldData GetSessionField(string sessionId)

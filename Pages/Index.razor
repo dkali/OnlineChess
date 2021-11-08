@@ -82,6 +82,14 @@
             _gameViewComponent.ReRender(targetComponent);
         });
 
+        hubConnection.On<string>("KickPlayer", (playerId) => 
+        {
+           if (playerId == playerDataService.accountId)
+           {
+               playerDataService.playerUiState = PlayerUiState.InLobby;
+           } 
+        });
+
         await hubConnection.StartAsync();
         lobbyService.AddPlayer(playerDataService.accountId, hubConnection.ConnectionId);
 
