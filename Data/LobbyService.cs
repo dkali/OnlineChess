@@ -155,6 +155,8 @@ namespace OnlineChess.Data
         {
             _gameSessions[sessionId].SessionState = SessionState.InGame;
             _lobbyHub.ReRenderGameView("StatsField");
+            _gameSessions[sessionId].Field.InitFigures();
+            _lobbyHub.ReRenderGameView("GameField");
         }
     }
 }

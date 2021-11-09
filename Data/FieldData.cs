@@ -32,5 +32,52 @@ namespace OnlineChess.Data
                 GameField[9][cellIndex].Value = ((char)(cur + cellIndex - 1)).ToString();
             }
         }
+
+        public void InitFigures()
+        {
+            // white figures
+            SetFigure("A1", Figures.WhiteChessRook);
+            SetFigure("B1", Figures.WhiteChessKnight);
+            SetFigure("C1", Figures.WhiteChessBishop);
+            SetFigure("D1", Figures.WhiteChessQueen);
+            SetFigure("E1", Figures.WhiteChessKing);
+            SetFigure("F1", Figures.WhiteChessBishop);
+            SetFigure("G1", Figures.WhiteChessKnight);
+            SetFigure("H1", Figures.WhiteChessRook);
+            SetFigure("A2", Figures.WhiteChessPawn);
+            SetFigure("B2", Figures.WhiteChessPawn);
+            SetFigure("C2", Figures.WhiteChessPawn);
+            SetFigure("D2", Figures.WhiteChessPawn);
+            SetFigure("E2", Figures.WhiteChessPawn);
+            SetFigure("F2", Figures.WhiteChessPawn);
+            SetFigure("G2", Figures.WhiteChessPawn);
+            SetFigure("H2", Figures.WhiteChessPawn);
+
+            // black figures
+            SetFigure("A8", Figures.BlackChessRook);
+            SetFigure("B8", Figures.BlackChessKnight);
+            SetFigure("C8", Figures.BlackChessBishop);
+            SetFigure("D8", Figures.BlackChessQueen);
+            SetFigure("E8", Figures.BlackChessKing);
+            SetFigure("F8", Figures.BlackChessBishop);
+            SetFigure("G8", Figures.BlackChessKnight);
+            SetFigure("H8", Figures.BlackChessRook);
+            SetFigure("A7", Figures.BlackChessPawn);
+            SetFigure("B7", Figures.BlackChessPawn);
+            SetFigure("C7", Figures.BlackChessPawn);
+            SetFigure("D7", Figures.BlackChessPawn);
+            SetFigure("E7", Figures.BlackChessPawn);
+            SetFigure("F7", Figures.BlackChessPawn);
+            SetFigure("G7", Figures.BlackChessPawn);
+            SetFigure("H7", Figures.BlackChessPawn);
+        }
+
+        public void SetFigure(string cell, Figures figureCode)
+        {
+            int rowInd = 9 - (cell[1] - '0');
+            int cellInd = cell[0] - '@';
+
+            GameField[rowInd][cellInd].Value = ChessFigures.Codes[(int)figureCode];
+        }
     }
 }

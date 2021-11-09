@@ -53,4 +53,9 @@
         SessionId = lobbyService.GetSessionId(playerDataService.accountId);
         Field = lobbyService.GetSessionField(SessionId);
     }
+
+    public void ReRender()
+    {
+        StateHasChanged();
+    }
 }
