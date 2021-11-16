@@ -13,7 +13,7 @@
     <tbody>
         @for (int rowIndex = 0; rowIndex < 10; rowIndex++)
         {
-            <tr>
+            <div class="grid-container">
                 @for (int cellIndex = 0; cellIndex < 10; cellIndex++)
                 {
                     if (cellIndex != 0 && cellIndex != 9 &&
@@ -21,20 +21,20 @@
                     {
                         if (StartFromWhite)
                         {
-                            <td class="white-cell">@Field.GameField[rowIndex][cellIndex].Value</td>
+                            <div class="white-cell">@Field.GameField[rowIndex][cellIndex].Value</div>
                         }
                         else
                         {
-                            <td class="black-cell">@Field.GameField[rowIndex][cellIndex].Value</td>
+                            <div class="black-cell">@Field.GameField[rowIndex][cellIndex].Value</div>
                         }
                         StartFromWhite = !StartFromWhite;
                     }
                     else
                     {
-                        <td class="border-cell">@Field.GameField[rowIndex][cellIndex].Value</td>
+                        <div class="border-cell">@Field.GameField[rowIndex][cellIndex].Value</div>
                     }
                 }
-            </tr>
+            </div>
             @if (rowIndex != 0)
             {
                 StartFromWhite = !StartFromWhite;
@@ -56,6 +56,7 @@
 
     public void ReRender()
     {
+        StartFromWhite = true;
         StateHasChanged();
     }
 }
