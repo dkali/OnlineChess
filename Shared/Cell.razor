@@ -1,0 +1,26 @@
+@using OnlineChess.Data
+
+<div class=@(Field.GameField[RowIndex][CellIndex].CellStyle)
+    @onclick="MoveFigure">@Field.GameField[RowIndex][CellIndex].Value</div>
+
+@code 
+{
+    [Parameter]
+    public int RowIndex { get; set; }
+    [Parameter]
+    public int CellIndex { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public FieldData Field { get; set; }
+    private string SessionId { get; set; }
+
+    protected override void OnInitialized()
+    {
+    }
+    
+    private async Task MoveFigure()
+    {
+        Field.GameField[RowIndex][CellIndex].CellStyle = "selected-cell";
+    }
+}

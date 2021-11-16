@@ -8,14 +8,37 @@ namespace OnlineChess.Data
         public List<List<FieldCell>> GameField = new List<List<FieldCell>>();
         public FieldData()
         {
+            bool StartFromWhite = true;
             // initialize empty field
             for (int rowIndex = 0; rowIndex < 10; rowIndex++)
             {
                 List<FieldCell> fRow = new List<FieldCell>();
                 for (int cellIndex = 0; cellIndex < 10; cellIndex++)
                 {
-                    FieldCell fCell = new FieldCell(" ");
+                    FieldCell fCell;
+                    if (cellIndex != 0 && cellIndex != 9 &&
+                        rowIndex != 0 && rowIndex != 9)
+                    {
+                        if (StartFromWhite)
+                        {
+                            fCell = new FieldCell(" ", "white-cell");
+                        }
+                        else
+                        {
+                            fCell = new FieldCell(" ", "black-cell");
+                        }
+                        StartFromWhite = !StartFromWhite;
+                    }
+                    else
+                    {
+                        fCell = new FieldCell(" ", "border-cell");
+                    }
+
                     fRow.Add(fCell);
+                }
+                if (rowIndex != 0)
+                {
+                    StartFromWhite = !StartFromWhite;
                 }
                 GameField.Add(fRow);
             }

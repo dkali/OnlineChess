@@ -2,50 +2,22 @@
 @inject LobbyService lobbyService
 @inject PlayerDataService playerDataService
 
-<table class="chess-field">
-    <colgroup>
-        @for (int i = 0; i < 10; i++)
-        {
-            <col span="1" style="width: 10%;">
-        }
-    </colgroup>
-
-    <tbody>
+<div class="chess-field">
+    <div class="grid-container">
         @for (int rowIndex = 0; rowIndex < 10; rowIndex++)
         {
-            <div class="grid-container">
-                @for (int cellIndex = 0; cellIndex < 10; cellIndex++)
-                {
-                    if (cellIndex != 0 && cellIndex != 9 &&
-                        rowIndex != 0 && rowIndex != 9)
-                    {
-                        if (StartFromWhite)
-                        {
-                            <div class="white-cell">@Field.GameField[rowIndex][cellIndex].Value</div>
-                        }
-                        else
-                        {
-                            <div class="black-cell">@Field.GameField[rowIndex][cellIndex].Value</div>
-                        }
-                        StartFromWhite = !StartFromWhite;
-                    }
-                    else
-                    {
-                        <div class="border-cell">@Field.GameField[rowIndex][cellIndex].Value</div>
-                    }
-                }
-            </div>
-            @if (rowIndex != 0)
+            @for (int cellIndex = 0; cellIndex < 10; cellIndex++)
             {
-                StartFromWhite = !StartFromWhite;
+                <Cell RowIndex="@rowIndex"
+                    CellIndex="@cellIndex"
+                    Field="@Field" />
             }
         }
-    </tbody>
-</table>
+    </div>
+</div>
 
 @code
 {
-    private bool StartFromWhite = true;
     public FieldData Field { get; set; }
     private string SessionId { get; set; }
     protected override void OnInitialized()
@@ -56,7 +28,6 @@
 
     public void ReRender()
     {
-        StartFromWhite = true;
         StateHasChanged();
     }
 }
