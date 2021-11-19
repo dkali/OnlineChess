@@ -6,12 +6,20 @@ namespace OnlineChess.Data
         public string Value { get; set; }
         public FieldCell(){}
         public string DefaultCellStyle { get; set; }
-        public string CellStyle { get; set; }
-        public FieldCell(string val, string style)
+        public FieldCell(string style)
         {
-            Value = val;
+            Value = string.Empty;
             DefaultCellStyle = style;
-            CellStyle = style;
+        }
+
+        public bool IsWhite()
+        {
+            return ChessFigures.WhiteFigures.Contains(Value);
+        }
+
+        public bool IsBlack()
+        {
+            return ChessFigures.BlackFigures.Contains(Value);
         }
     }
 }

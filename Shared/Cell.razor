@@ -1,7 +1,9 @@
 @using OnlineChess.Data
+@inject LobbyService lobbyService
+@inject PlayerDataService playerDataService
 
-<div class=@(Field.GameField[RowIndex][CellIndex].CellStyle)
-    @onclick="MoveFigure">@Field.GameField[RowIndex][CellIndex].Value</div>
+<div class=@(playerDataService.StyleData[RowIndex][CellIndex] == "default" ? GSession.Field.GameField[RowIndex][CellIndex].DefaultCellStyle : playerDataService.StyleData[RowIndex][CellIndex])
+    @onclick="CellClick">@GSession.Field.GameField[RowIndex][CellIndex].Value</div>
 
 @code 
 {
@@ -10,17 +12,33 @@
     [Parameter]
     public int CellIndex { get; set; }
     [Parameter]
-    public RenderFragment ChildContent { get; set; }
-    [Parameter]
-    public FieldData Field { get; set; }
-    private string SessionId { get; set; }
+    public GameSession GSession { get; set; }
+    private string CellStyle;
 
     protected override void OnInitialized()
     {
+        CellStyle = GSession.Field.GameField[RowIndex][CellIndex].DefaultCellStyle;
     }
     
-    private async Task MoveFigure()
+    private async Task CellClick()
     {
-        Field.GameField[RowIndex][CellIndex].CellStyle = "selected-cell";
+        // proceed only on my turn
+        if (!GSession.IsItMyTurn(playerDataService.AccountId))
+            return;
+
+        if (GSession.Field.GameField[RowIndex][CellIndex].IsWhite() &&
+            (GSession.WhitePlayer == playerDataService.AccountId) ||
+            GSession.Field.GameField[RowIndex][CellIndex].IsBlack() &&
+            (GSession.BlackPlayer == playerDataService.AccountId))
+        {
+            // I have clicked on my Figure
+            playerDataService.ResetStyleData();
+            playerDataService.SelectFigure(RowIndex, CellIndex);
+            lobbyService.ReRender("GameField");
+        }
+
+        @* if (playerDataService.FigureSelected) *@
+        
     }
+
 }

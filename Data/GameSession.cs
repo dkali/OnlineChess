@@ -18,6 +18,7 @@ namespace OnlineChess.Data
         public FieldData Field { get; set; }
         public string WhitePlayer { get; set; }
         public string BlackPlayer { get; set; }
+        private bool WhiteTurn { get; set; }
 
         public GameSession()
         {
@@ -25,6 +26,15 @@ namespace OnlineChess.Data
             SessionId = Guid.NewGuid().ToString();
             SessionState = SessionState.Preparation;
             Field = new FieldData();
+            WhiteTurn = true;
+        }
+
+        public bool IsItMyTurn(string accountId)
+        {
+            if (WhiteTurn)
+                return WhitePlayer == accountId;
+            else
+                return BlackPlayer == accountId;
         }
     }
 }

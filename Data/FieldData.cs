@@ -21,17 +21,17 @@ namespace OnlineChess.Data
                     {
                         if (StartFromWhite)
                         {
-                            fCell = new FieldCell(" ", "white-cell");
+                            fCell = new FieldCell("white-cell");
                         }
                         else
                         {
-                            fCell = new FieldCell(" ", "black-cell");
+                            fCell = new FieldCell("black-cell");
                         }
                         StartFromWhite = !StartFromWhite;
                     }
                     else
                     {
-                        fCell = new FieldCell(" ", "border-cell");
+                        fCell = new FieldCell("border-cell");
                     }
 
                     fRow.Add(fCell);

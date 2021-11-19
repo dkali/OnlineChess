@@ -48,7 +48,7 @@
         if (!firstRender)
             return;
 
-        if (string.IsNullOrEmpty(playerDataService.accountId))
+        if (string.IsNullOrEmpty(playerDataService.AccountId))
         {
             // read cookie
             var result = await BrowserStorage.GetAsync<string>("accountId");
@@ -61,11 +61,11 @@
             }
             else
             {
-                playerDataService.accountId = accountId;
+                playerDataService.AccountId = accountId;
             }
         }
 
-        playerName = sqliteDb.GetPlayerName(playerDataService.accountId);
+        playerName = sqliteDb.GetPlayerName(playerDataService.AccountId);
 
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/lobbyhub"))
@@ -84,16 +84,16 @@
 
         hubConnection.On<string>("KickPlayer", (playerId) => 
         {
-           if (playerId == playerDataService.accountId)
+           if (playerId == playerDataService.AccountId)
            {
                playerDataService.playerUiState = PlayerUiState.InLobby;
            } 
         });
 
         await hubConnection.StartAsync();
-        lobbyService.AddPlayer(playerDataService.accountId, hubConnection.ConnectionId);
+        lobbyService.AddPlayer(playerDataService.AccountId, hubConnection.ConnectionId);
 
-        playerDataService.playerUiState = lobbyService.PlayerInGameSession(playerDataService.accountId) ?
+        playerDataService.playerUiState = lobbyService.PlayerInGameSession(playerDataService.AccountId) ?
             PlayerUiState.InGame : PlayerUiState.InLobby;
     }
 

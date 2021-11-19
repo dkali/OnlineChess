@@ -10,7 +10,7 @@
             {
                 <Cell RowIndex="@rowIndex"
                     CellIndex="@cellIndex"
-                    Field="@Field" />
+                    GSession="@GSession" />
             }
         }
     </div>
@@ -18,12 +18,10 @@
 
 @code
 {
-    public FieldData Field { get; set; }
-    private string SessionId { get; set; }
+    public GameSession GSession { get; set; }
     protected override void OnInitialized()
     {
-        SessionId = lobbyService.GetSessionId(playerDataService.accountId);
-        Field = lobbyService.GetSessionField(SessionId);
+        GSession = lobbyService.GetGameSession(playerDataService.AccountId);
     }
 
     public void ReRender()

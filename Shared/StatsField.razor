@@ -8,7 +8,7 @@
     <div>Host: @sqliteDb.GetPlayerName(GSession.OwnerId)</div>
     @if (GSession.SessionState == SessionState.Preparation)
     {
-        @if (playerDataService.accountId == GSession.OwnerId)
+        @if (playerDataService.AccountId == GSession.OwnerId)
         {
             <div>Select oponent: <RadzenDropDown AllowClear="true" TValue="string" Style="width:300px" 
                                     Data=@(GSession.Players.
@@ -38,8 +38,6 @@
 
 @code
 {
-    public string Host { get; set; }
-    public List<string> Players { get; set; }
     private GameSession GSession { get; set; }
     private string oponentId { get; set; }
     private string oponentName { get; set; }
@@ -48,7 +46,7 @@
 
     protected override void OnInitialized()
     {
-       GSession = lobbyService.GetGameSession(playerDataService.accountId);
+       GSession = lobbyService.GetGameSession(playerDataService.AccountId);
        _startGameBtnDisabled = true;
        _oponentSelected = false;
        _sideSelected = false;
@@ -65,7 +63,7 @@
         {
             // we can leave, no harm done
             playerDataService.playerUiState = PlayerUiState.InLobby;
-            lobbyService.LeaveGame(GSession.SessionId, playerDataService.accountId);
+            lobbyService.LeaveGame(GSession.SessionId, playerDataService.AccountId);
         }
         else
         {
@@ -100,7 +98,8 @@
     private void OnSideChange(object value, string name)
     {
         _sideSelected = value == null ? false : true;
-        _whitePlayerId = oponentId;
+        string tmp = sqliteDb.GetPlayerName(GSession.OwnerId);
+        _whitePlayerId = (sqliteDb.GetPlayerName(GSession.OwnerId) == (string)value ? GSession.OwnerId : oponentId);
         _startGameBtnDisabled = !(_oponentSelected && _sideSelected);
     }
 }

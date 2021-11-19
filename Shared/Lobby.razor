@@ -50,7 +50,7 @@ Active Players:
                     }
                 </td>
                 <td>
-                    @if (accountId == playerDataService.accountId)
+                    @if (accountId == playerDataService.AccountId)
                     {
                         <Button @onclick="CreateGame">Create Game</Button>
                     }
@@ -76,21 +76,21 @@ Active Players:
     private async Task Logout()
     {
         await BrowserStorage.DeleteAsync("accountId");
-        playerDataService.accountId = "";
+        playerDataService.AccountId = "";
         playerDataService.playerUiState = PlayerUiState.None;
         NavigationManager.NavigateTo("/login");
     }
 
     private async Task CreateGame()
     {
-        lobbyService.CreateGameSession(playerDataService.accountId);
+        lobbyService.CreateGameSession(playerDataService.AccountId);
         playerDataService.playerUiState = PlayerUiState.InGame;
         await Notifier.Update("SessionChanged", 0);
     }
 
     private async Task JoinGame(string hostId)
     {
-        lobbyService.JoinGameSession(playerDataService.accountId, hostId);
+        lobbyService.JoinGameSession(playerDataService.AccountId, hostId);
         playerDataService.playerUiState = PlayerUiState.InGame;
         await Notifier.Update("SessionChanged", 0);
     }

@@ -35,7 +35,7 @@
         if (!firstRender)
             return;
 
-        if (string.IsNullOrEmpty(sqliteDb.GetPlayerName(playerDataService.accountId)))
+        if (string.IsNullOrEmpty(sqliteDb.GetPlayerName(playerDataService.AccountId)))
         {
             _error = string.Empty;
             var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
@@ -115,7 +115,7 @@
 
                 // Identity confirmed, store user's data
                 sqliteDb.AddPlayer(accountId, userName, tData.access_token, tData.refresh_token);
-                playerDataService.accountId = accountId;
+                playerDataService.AccountId = accountId;
                 // save cookie
                 await BrowserStorage.SetAsync("accountId", accountId);
 

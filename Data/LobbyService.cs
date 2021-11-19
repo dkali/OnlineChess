@@ -158,5 +158,10 @@ namespace OnlineChess.Data
             _gameSessions[sessionId].Field.InitFigures();
             _lobbyHub.ReRenderGameView("GameField");
         }
+
+        public void ReRender(string target)
+        {
+            _lobbyHub.ReRenderGameView(target);
+        }
     }
 }

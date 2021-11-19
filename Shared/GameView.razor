@@ -16,7 +16,7 @@
     private ChessField _gameField;
     protected override void OnInitialized()
     {
-        SessionId = lobbyService.GetSessionId(playerDataService.accountId);
+        SessionId = lobbyService.GetSessionId(playerDataService.AccountId);
         Field = lobbyService.GetSessionField(SessionId);
     }
 
