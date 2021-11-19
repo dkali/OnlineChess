@@ -36,5 +36,12 @@ namespace OnlineChess.Data
             else
                 return BlackPlayer == accountId;
         }
+
+        public void MoveFigure((int fromRowIndex, int fromCellIndex) selectedCell, int toRowIndex, int toCellIndex)
+        {
+            Field.GameField[toRowIndex][toCellIndex].Value = Field.GameField[selectedCell.fromRowIndex][selectedCell.fromCellIndex].Value;
+            Field.GameField[selectedCell.fromRowIndex][selectedCell.fromCellIndex].Value = string.Empty;
+            WhiteTurn = !WhiteTurn;
+        }
     }
 }

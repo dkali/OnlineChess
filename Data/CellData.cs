@@ -1,12 +1,12 @@
 
 namespace OnlineChess.Data
 {
-    public class FieldCell
+    public class CellData
     {
         public string Value { get; set; }
-        public FieldCell(){}
+        public CellData(){}
         public string DefaultCellStyle { get; set; }
-        public FieldCell(string style)
+        public CellData(string style)
         {
             Value = string.Empty;
             DefaultCellStyle = style;

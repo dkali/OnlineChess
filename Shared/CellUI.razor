@@ -36,6 +36,16 @@
             playerDataService.SelectFigure(RowIndex, CellIndex);
             lobbyService.ReRender("GameField");
         }
+        else if (playerDataService.FigureSelected
+            // TODO
+            // && playerDataService.MoveAllowed(RowIndex, CellIndex)
+            )
+        {
+            GSession.MoveFigure(playerDataService.SelectedCell, RowIndex, CellIndex);
+            playerDataService.FigureSelected = false;
+            playerDataService.ResetStyleData();
+            lobbyService.ReRender("GameField");
+        }
 
         @* if (playerDataService.FigureSelected) *@
         

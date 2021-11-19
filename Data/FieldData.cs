@@ -5,33 +5,33 @@ namespace OnlineChess.Data
 {
     public class FieldData
     {
-        public List<List<FieldCell>> GameField = new List<List<FieldCell>>();
+        public List<List<CellData>> GameField = new List<List<CellData>>();
         public FieldData()
         {
             bool StartFromWhite = true;
             // initialize empty field
             for (int rowIndex = 0; rowIndex < 10; rowIndex++)
             {
-                List<FieldCell> fRow = new List<FieldCell>();
+                List<CellData> fRow = new List<CellData>();
                 for (int cellIndex = 0; cellIndex < 10; cellIndex++)
                 {
-                    FieldCell fCell;
+                    CellData fCell;
                     if (cellIndex != 0 && cellIndex != 9 &&
                         rowIndex != 0 && rowIndex != 9)
                     {
                         if (StartFromWhite)
                         {
-                            fCell = new FieldCell("white-cell");
+                            fCell = new CellData("white-cell");
                         }
                         else
                         {
-                            fCell = new FieldCell("black-cell");
+                            fCell = new CellData("black-cell");
                         }
                         StartFromWhite = !StartFromWhite;
                     }
                     else
                     {
-                        fCell = new FieldCell("border-cell");
+                        fCell = new CellData("border-cell");
                     }
 
                     fRow.Add(fCell);
