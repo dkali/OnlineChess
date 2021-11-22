@@ -70,5 +70,10 @@ namespace OnlineChess.Server.Hubs
         {
             await Clients.All.SendAsync("KickPlayer", playerId);
         }
+
+        public async Task PlayerLeft(string playerId)
+        {
+            await Clients.Others.SendAsync("PlayerLeft", playerId);
+        }
     }
 }

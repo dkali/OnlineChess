@@ -123,12 +123,27 @@ namespace OnlineChess.Data
             if (gameSession.OwnerId == accountId) // TODO, add case for second player
             {
                 // owner left, terminate game session
-                foreach (string playerId in gameSession.Players)
+                TerminateGameSession(gameSession);
+            }
+            else if (gameSession.OponentId == accountId)
+            {
+                // second player left the game
+                switch (gameSession.SessionState)
                 {
-                    _playerMap[playerId].GameSessionId = string.Empty;
-                    _lobbyHub.KickPlayer(playerId);
+                    case SessionState.Preparation:
+                        // TODO: notify Host
+                        gameSession.OponentId = string.Empty;
+                        gameSession.Players.Remove(accountId);
+                        _playerMap[accountId].GameSessionId = string.Empty;
+                        _lobbyHub.ReRenderGameView("StatsField");
+                        break;
+
+                    case SessionState.InGame:
+                        // terminate game session ant notify others
+                        TerminateGameSession(gameSession);
+                        _lobbyHub.PlayerLeft(accountId);
+                        break;
                 }
-                _gameSessions.Remove(sessionId);
             }
             else
             {
@@ -139,6 +154,16 @@ namespace OnlineChess.Data
 
             }
             _lobbyHub.RefreshPlayerList();
+        }
+
+        public void TerminateGameSession(GameSession gameSession)
+        {
+            foreach (string playerId in gameSession.Players)
+                {
+                    _playerMap[playerId].GameSessionId = string.Empty;
+                    _lobbyHub.KickPlayer(playerId);
+                }
+                _gameSessions.Remove(gameSession.SessionId);
         }
 
         public void RefreshPLayerList()

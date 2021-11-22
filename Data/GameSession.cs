@@ -18,6 +18,7 @@ namespace OnlineChess.Data
         public FieldData Field { get; set; }
         public string WhitePlayer { get; set; }
         public string BlackPlayer { get; set; }
+        public string OponentId { get; set; }
         private bool WhiteTurn { get; set; }
 
         public GameSession()

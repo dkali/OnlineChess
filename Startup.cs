@@ -8,6 +8,7 @@ using OnlineChess.Data;
 using Microsoft.AspNetCore.ResponseCompression;
 using OnlineChess.Server.Hubs;
 using EFChessData;
+using Radzen;
 
 namespace OnlineChess
 {
@@ -45,6 +46,8 @@ namespace OnlineChess
             // Add your context to your services
             services.AddEntityFrameworkSqlite().AddDbContext<ChessDataContext>();
             services.AddScoped<NotifierService>();
+            services.AddScoped<DialogService>();
+            services.AddScoped<NotificationService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

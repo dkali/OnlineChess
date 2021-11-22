@@ -13,6 +13,7 @@
 @inject ProtectedLocalStorage BrowserStorage
 @inject NotifierService Notifier
 @inject ILogger<Index> logger
+@inject DialogService DialogService
 @implements IAsyncDisposable
 
 @switch (playerDataService.playerUiState)
@@ -88,6 +89,11 @@
            {
                playerDataService.playerUiState = PlayerUiState.InLobby;
            } 
+        });
+
+        hubConnection.On<string>("PlayerLeft", (playerId) => 
+        {
+            DialogService.Confirm($"Player {sqliteDb.GetPlayerName(playerId)} left the game", "Oops", new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
         });
 
         await hubConnection.StartAsync();

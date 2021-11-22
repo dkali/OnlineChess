@@ -13,11 +13,9 @@
     public int CellIndex { get; set; }
     [Parameter]
     public GameSession GSession { get; set; }
-    private string CellStyle;
 
     protected override void OnInitialized()
     {
-        CellStyle = GSession.Field.GameField[RowIndex][CellIndex].DefaultCellStyle;
     }
     
     private async Task CellClick()
