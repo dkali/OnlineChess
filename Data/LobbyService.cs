@@ -120,10 +120,25 @@ namespace OnlineChess.Data
         public void LeaveGame(string sessionId, string accountId)
         {
             GameSession gameSession = _gameSessions[sessionId];
-            if (gameSession.OwnerId == accountId) // TODO, add case for second player
+            if (gameSession.Winner != string.Empty)
+            {
+                // game is over, safe to leave
+                if (gameSession.OwnerId == accountId) // TODO, add case for second player
+                {
+                    // owner left, terminate game session
+                    TerminateGameSession(gameSession);
+                    _lobbyHub.PlayerLeft(accountId);
+                }
+                else
+                {
+                    PlayerLeftGame(gameSession, accountId);
+                }
+            }
+            else if (gameSession.OwnerId == accountId) // TODO, add case for second player
             {
                 // owner left, terminate game session
                 TerminateGameSession(gameSession);
+                _lobbyHub.PlayerLeft(accountId);
             }
             else if (gameSession.OponentId == accountId)
             {
@@ -133,9 +148,7 @@ namespace OnlineChess.Data
                     case SessionState.Preparation:
                         // TODO: notify Host
                         gameSession.OponentId = string.Empty;
-                        gameSession.Players.Remove(accountId);
-                        _playerMap[accountId].GameSessionId = string.Empty;
-                        _lobbyHub.ReRenderGameView("StatsField");
+                        PlayerLeftGame(gameSession, accountId);
                         break;
 
                     case SessionState.InGame:
@@ -148,12 +161,16 @@ namespace OnlineChess.Data
             else
             {
                 // observer left, never mind
-                gameSession.Players.Remove(accountId);
-                _playerMap[accountId].GameSessionId = string.Empty;
-                _lobbyHub.ReRenderGameView("StatsField");
-
+                PlayerLeftGame(gameSession, accountId);
             }
             _lobbyHub.RefreshPlayerList();
+        }
+
+        public void PlayerLeftGame(GameSession gameSession, string accountId)
+        {
+            gameSession.Players.Remove(accountId);
+            _playerMap[accountId].GameSessionId = string.Empty;
+            _lobbyHub.ReRenderGameView("StatsField");
         }
 
         public void TerminateGameSession(GameSession gameSession)

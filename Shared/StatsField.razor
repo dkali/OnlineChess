@@ -24,8 +24,38 @@
     }
     else
     {
-        <div>White player: @sqliteDb.GetPlayerName(@GSession.WhitePlayer)</div>
-        <div>Black player: @sqliteDb.GetPlayerName(@GSession.BlackPlayer)</div>
+        @if (GSession.WhiteTurn)
+        {
+            <div><b>White player: @sqliteDb.GetPlayerName(@GSession.WhitePlayer)</b></div>
+        }
+        else
+        {
+            <div>White player: @sqliteDb.GetPlayerName(@GSession.WhitePlayer)</div>
+        }
+
+        @if (GSession.EatenBlacks != string.Empty)
+        {
+            <div>@GSession.EatenBlacks</div>
+        }
+        
+        @if (!GSession.WhiteTurn)
+        {
+            <div><b>Black player: @sqliteDb.GetPlayerName(@GSession.BlackPlayer)</b></div>
+        }
+        else
+        {
+            <div>Black player: @sqliteDb.GetPlayerName(@GSession.BlackPlayer)</div>
+        }
+
+        @if (GSession.EatenWhites != string.Empty)
+        {
+            <div>@GSession.EatenWhites</div>
+        }
+
+        @if (GSession.Winner != string.Empty)
+        {
+            <div><b>Winner is @sqliteDb.GetPlayerName(@GSession.Winner)</b></div>
+        }
     }
 
     <div>players in room:</div>
