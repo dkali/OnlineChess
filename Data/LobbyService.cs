@@ -2,6 +2,7 @@ using OnlineChess.Server.Hubs;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using System.Threading.Tasks;
 
 namespace OnlineChess.Data
 {
@@ -101,44 +102,56 @@ namespace OnlineChess.Data
 
         public void CreateGameSession(string accountId)
         {
-            GameSession gSession = new GameSession();
-            gSession.OwnerId = accountId;
-            gSession.Players.Add(accountId);
+            GameSession gameSession = new GameSession();
+            gameSession.OwnerId = accountId;
+            gameSession.Players.Add(accountId);
 
-            _gameSessions[gSession.SessionId] = gSession;
-            _playerMap[accountId].GameSessionId = gSession.SessionId;
+            _gameSessions[gameSession.SessionId] = gameSession;
+            _playerMap[accountId].GameSessionId = gameSession.SessionId;
+
+            // player might have opened Chess game from several devices, need to add all of the connections
+            // associated with this user to a group
+            foreach (string connectionId in _playerMap[accountId].SignalRConnections)
+            {
+                _lobbyHub.InsertIntoGroup(connectionId, gameSession.SessionId);
+            }
         }
 
         public void JoinGameSession(string accountId, string hostId)
         {
-            GameSession gSession = GetGameSession(hostId);
-            gSession.Players.Add(accountId);
-            _playerMap[accountId].GameSessionId = gSession.SessionId;
-            _lobbyHub.ReRenderGameView("StatsField");
+            GameSession gameSession = GetGameSession(hostId);
+            if (gameSession.Players.Contains(accountId))
+            {
+                // if click on Join button twice and fast, two cliks are registered, which lead to 
+                // exception in the dropdown list later
+                return;
+            }
+            
+            gameSession.Players.Add(accountId);
+            _playerMap[accountId].GameSessionId = gameSession.SessionId;
+            _lobbyHub.ReRenderGameView(gameSession.SessionId, "StatsField");
+
+            // player might have opened Chess game from several devices, need to add all of the connections
+            // associated with this user to a group
+            foreach (string connectionId in _playerMap[accountId].SignalRConnections)
+            {
+                _lobbyHub.InsertIntoGroup(connectionId, gameSession.SessionId);
+            }
         }
 
-        public void LeaveGame(string sessionId, string accountId)
+        public async Task LeaveGame(string sessionId, string accountId)
         {
             GameSession gameSession = _gameSessions[sessionId];
             if (gameSession.Winner != string.Empty)
             {
                 // game is over, safe to leave
-                if (gameSession.OwnerId == accountId) // TODO, add case for second player
-                {
-                    // owner left, terminate game session
-                    TerminateGameSession(gameSession);
-                    _lobbyHub.PlayerLeft(accountId);
-                }
-                else
-                {
-                    PlayerLeftGame(gameSession, accountId);
-                }
+                PlayerLeftGame(gameSession, accountId);
             }
-            else if (gameSession.OwnerId == accountId) // TODO, add case for second player
+            else if (gameSession.OwnerId == accountId)
             {
                 // owner left, terminate game session
+                await _lobbyHub.NotifyPlayerLeft(accountId, gameSession.SessionId);
                 TerminateGameSession(gameSession);
-                _lobbyHub.PlayerLeft(accountId);
             }
             else if (gameSession.OponentId == accountId)
             {
@@ -153,8 +166,8 @@ namespace OnlineChess.Data
 
                     case SessionState.InGame:
                         // terminate game session ant notify others
+                        await _lobbyHub.NotifyPlayerLeft(accountId, gameSession.SessionId);
                         TerminateGameSession(gameSession);
-                        _lobbyHub.PlayerLeft(accountId);
                         break;
                 }
             }
@@ -163,14 +176,24 @@ namespace OnlineChess.Data
                 // observer left, never mind
                 PlayerLeftGame(gameSession, accountId);
             }
-            _lobbyHub.RefreshPlayerList();
+            await _lobbyHub.RefreshPlayerList();
         }
 
         public void PlayerLeftGame(GameSession gameSession, string accountId)
         {
             gameSession.Players.Remove(accountId);
             _playerMap[accountId].GameSessionId = string.Empty;
-            _lobbyHub.ReRenderGameView("StatsField");
+            _lobbyHub.ReRenderGameView(gameSession.SessionId, "StatsField");
+
+            foreach (string connectionId in _playerMap[accountId].SignalRConnections)
+            {
+                _lobbyHub.RemoveFromGroup(connectionId, gameSession.SessionId);
+            }
+
+            if (gameSession.Players.Count() == 0)
+            {
+                TerminateGameSession(gameSession);
+            }
         }
 
         public void TerminateGameSession(GameSession gameSession)
@@ -179,6 +202,11 @@ namespace OnlineChess.Data
                 {
                     _playerMap[playerId].GameSessionId = string.Empty;
                     _lobbyHub.KickPlayer(playerId);
+
+                    foreach (string connectionId in _playerMap[playerId].SignalRConnections)
+                    {
+                        _lobbyHub.RemoveFromGroup(connectionId, gameSession.SessionId);
+                    }
                 }
                 _gameSessions.Remove(gameSession.SessionId);
         }
@@ -196,14 +224,25 @@ namespace OnlineChess.Data
         public void StartGame(string sessionId)
         {
             _gameSessions[sessionId].SessionState = SessionState.InGame;
-            _lobbyHub.ReRenderGameView("StatsField");
+            _lobbyHub.ReRenderGameView(sessionId, "StatsField");
+
             _gameSessions[sessionId].Field.InitFigures();
-            _lobbyHub.ReRenderGameView("GameField");
+            _lobbyHub.ReRenderGameView(sessionId, "GameField");
         }
 
-        public void ReRender(string target)
+        public void ReRender(string groupName, string target)
         {
-            _lobbyHub.ReRenderGameView(target);
+            _lobbyHub.ReRenderGameView(groupName, target);
+        }
+
+        public List<string> GetPlayerConnections(string accountId)
+        {
+            List<string> connections = new List<string>();
+            foreach (string connection in _playerMap[accountId].SignalRConnections)
+            {
+                connections.Add(connection);
+            }
+            return connections;
         }
     }
 }

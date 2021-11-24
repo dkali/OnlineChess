@@ -60,10 +60,9 @@ namespace OnlineChess.Server.Hubs
             await Clients.All.SendAsync("RefreshPlayerList", _players);
         }
 
-        // TODO add SignalR group as parameter
-        public async Task ReRenderGameView(string targetComponent)
+        public async Task ReRenderGameView(string groupName, string targetComponent)
         {
-            await Clients.All.SendAsync("ReRenderGameView", targetComponent);
+            await Clients.Group(groupName).SendAsync("ReRenderGameView", targetComponent);
         }
 
         public async Task KickPlayer(string playerId)
@@ -71,9 +70,23 @@ namespace OnlineChess.Server.Hubs
             await Clients.All.SendAsync("KickPlayer", playerId);
         }
 
-        public async Task PlayerLeft(string playerId)
+        public async Task NotifyPlayerLeft(string playerId, string groupName)
         {
-            await Clients.Others.SendAsync("PlayerLeft", playerId);
+            List<string> excludedConnections = lobbyService.GetPlayerConnections(playerId);
+            await Clients.GroupExcept(groupName, excludedConnections).SendAsync("PlayerLeft", playerId);
+
+            // await Clients.Client("asas").SendAsync(...);
+            // await Clients.Group("name").SendAsync(...);
+        }
+
+        public async Task InsertIntoGroup(string connectionId, string groupName)
+        {
+            await Groups.AddToGroupAsync(connectionId, groupName);
+        }
+
+        public async Task RemoveFromGroup(string connectionId, string groupName)
+        {
+            await Groups.RemoveFromGroupAsync(connectionId, groupName);
         }
     }
 }

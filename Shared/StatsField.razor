@@ -89,7 +89,7 @@
     private async Task LeaveGame()
     {
         playerDataService.playerUiState = PlayerUiState.InLobby;
-        lobbyService.LeaveGame(GSession.SessionId, playerDataService.AccountId);
+        await lobbyService.LeaveGame(GSession.SessionId, playerDataService.AccountId);
     }
 
     private async Task StartGame()
