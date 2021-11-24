@@ -226,6 +226,8 @@ namespace OnlineChess.Data
 
             _gameSessions[sessionId].Field.InitFigures();
             await _lobbyHub.ReRenderGameView(sessionId, "GameField");
+
+            await _lobbyHub.RefreshPlayerList();
         }
 
         public async Task ReRender(string groupName, string target)

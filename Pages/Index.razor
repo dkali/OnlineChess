@@ -85,10 +85,7 @@
 
         hubConnection.On<string>("KickPlayer", (playerId) => 
         {
-           if (playerId == playerDataService.AccountId)
-           {
-               playerDataService.playerUiState = PlayerUiState.InLobby;
-           } 
+            playerDataService.playerUiState = PlayerUiState.InLobby;
         });
 
         hubConnection.On<string>("PlayerLeft", (playerId) => 

@@ -17,23 +17,6 @@ namespace OnlineChess.Server.Hubs
             _logger = logger;
         }
 
-        // public async Task SendMessage(string user, string message)
-        // {
-        //     await Clients.All.SendAsync("ReceiveMessage", user, message);
-        // }
-
-        // // The user identifier for a connection can be accessed by the Context.UserIdentifier property in the hub.
-        // public Task SendPrivateMessage(string user, string message)
-        // {
-        //     return Clients.User(user).SendAsync("ReceiveMessage", message);
-        // }
-
-        // public async Task NewPlayerJoined(string playerName, string connectionId)
-        // {
-        //     // string userId = Context.UserIdentifier;
-        //     await Clients.Others.SendAsync("NewClientJoined", playerName, connectionId);
-        // }
-
         public override async Task OnConnectedAsync()
         {
             _logger.LogInformation($"[SignalR] User connected {Context.ConnectionId}");
@@ -67,16 +50,17 @@ namespace OnlineChess.Server.Hubs
 
         public async Task KickPlayer(string playerId)
         {
-            await Clients.All.SendAsync("KickPlayer", playerId);
+            List<string> playerConnections = lobbyService.GetPlayerConnections(playerId);
+            foreach (string connectionId in playerConnections)
+            {
+                await Clients.Client(connectionId).SendAsync("KickPlayer", playerId);
+            }
         }
 
         public async Task NotifyPlayerLeft(string playerId, string groupName)
         {
             List<string> excludedConnections = lobbyService.GetPlayerConnections(playerId);
             await Clients.GroupExcept(groupName, excludedConnections).SendAsync("PlayerLeft", playerId);
-
-            // await Clients.Client("asas").SendAsync(...);
-            // await Clients.Group("name").SendAsync(...);
         }
 
         public async Task InsertIntoGroup(string connectionId, string groupName)
