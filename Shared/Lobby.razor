@@ -83,14 +83,14 @@ Active Players:
 
     private async Task CreateGame()
     {
-        lobbyService.CreateGameSession(playerDataService.AccountId);
+        await lobbyService.CreateGameSession(playerDataService.AccountId);
         playerDataService.playerUiState = PlayerUiState.InGame;
         await Notifier.Update("SessionChanged", 0);
     }
 
     private async Task JoinGame(string hostId)
     {
-        lobbyService.JoinGameSession(playerDataService.AccountId, hostId);
+        await lobbyService.JoinGameSession(playerDataService.AccountId, hostId);
         playerDataService.playerUiState = PlayerUiState.InGame;
         await Notifier.Update("SessionChanged", 0);
     }

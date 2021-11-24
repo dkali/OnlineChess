@@ -97,7 +97,7 @@
         });
 
         await hubConnection.StartAsync();
-        lobbyService.AddPlayer(playerDataService.AccountId, hubConnection.ConnectionId);
+        await lobbyService.AddPlayer(playerDataService.AccountId, hubConnection.ConnectionId);
 
         playerDataService.playerUiState = lobbyService.PlayerInGameSession(playerDataService.AccountId) ?
             PlayerUiState.InGame : PlayerUiState.InLobby;
@@ -108,12 +108,8 @@
 
     public async Task OnNotify(string key, int value)
     {
-        await InvokeAsync(() =>
-        {
-            @* lastNotification = (key, value); *@
-            StateHasChanged();
-            lobbyService.RefreshPLayerList(); // may be not needed
-        });
+        StateHasChanged();
+        await lobbyService.RefreshPLayerList();
     }
 
     public async ValueTask DisposeAsync()

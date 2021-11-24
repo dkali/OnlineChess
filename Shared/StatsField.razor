@@ -96,7 +96,7 @@
     {
         GSession.WhitePlayer = _whitePlayerId == GSession.OwnerId ? GSession.OwnerId : GSession.OponentId;
         GSession.BlackPlayer = _whitePlayerId == GSession.OwnerId ? GSession.OponentId : GSession.OwnerId;
-        lobbyService.StartGame(GSession.SessionId);
+        await lobbyService.StartGame(GSession.SessionId);
     }
 
     private void OnPlayerChange(object value, string name)

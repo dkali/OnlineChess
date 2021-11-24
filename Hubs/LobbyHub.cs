@@ -46,7 +46,7 @@ namespace OnlineChess.Server.Hubs
             _logger.LogInformation($"[SignalR] User disconnected {Context.ConnectionId}");
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, "SignalR Users");
             await base.OnDisconnectedAsync(exception);
-            lobbyService.RemovePlayer(Context.ConnectionId);
+            await lobbyService.RemovePlayer(Context.ConnectionId);
         }
 
         public async Task RefreshPlayerListWith(List<string> players)

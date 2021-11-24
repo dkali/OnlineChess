@@ -30,7 +30,7 @@
 
 @code {
     private string _authorizationCode, _error;
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
             return;
@@ -45,7 +45,7 @@
                 logger.LogInformation("[OC] 'Code' query parametr detected");
                 _authorizationCode = _GoogleCode;
 
-                RequestTokens();
+                await RequestTokens();
             }
             if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("error", out var _Error))
             {
@@ -132,7 +132,7 @@
         }
     }
 
-    private async Task RedirectToGoogleAuth()
+    private void RedirectToGoogleAuth()
     {
         StringBuilder sb = new StringBuilder("https://accounts.google.com/o/oauth2/v2/auth?");
         sb.Append("client_id=527012841613-ao9pc9vkfutider6bq26jt0vnr1tj7n2.apps.googleusercontent.com");

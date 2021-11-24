@@ -32,7 +32,7 @@
             // I have clicked on my Figure
             playerDataService.ResetStyleData();
             playerDataService.SelectFigure(RowIndex, CellIndex);
-            lobbyService.ReRender(GSession.SessionId, "GameField");
+            await lobbyService.ReRender(GSession.SessionId, "GameField");
         }
         else if (playerDataService.FigureSelected
             // TODO
@@ -42,8 +42,8 @@
             GSession.MoveFigure(playerDataService.SelectedCell, RowIndex, CellIndex);
             playerDataService.FigureSelected = false;
             playerDataService.ResetStyleData();
-            lobbyService.ReRender(GSession.SessionId, "GameField");
-            lobbyService.ReRender(GSession.SessionId, "StatsField");
+            await lobbyService.ReRender(GSession.SessionId, "GameField");
+            await lobbyService.ReRender(GSession.SessionId, "StatsField");
         }
     }
 }

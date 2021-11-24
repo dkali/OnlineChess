@@ -31,7 +31,7 @@ namespace OnlineChess.Data
             _sqliteDb = sqliteDb;
         }
 
-        public bool AddPlayer(string accountId, string connectionId)
+        public async Task AddPlayer(string accountId, string connectionId)
         {
             // bad code. needed to set a reference
             _lobbyHub.lobbyService = this;
@@ -59,12 +59,10 @@ namespace OnlineChess.Data
             _accountsLUT.Add(connectionId, accountId);
 
             // notify other players
-            _lobbyHub.RefreshPlayerListWith(_playersInLobby);
-            
-            return true;
+            await _lobbyHub.RefreshPlayerListWith(_playersInLobby);
         }
 
-        public void RemovePlayer(string connectionId)
+        public async Task RemovePlayer(string connectionId)
         {
             string accountId = _accountsLUT[connectionId];
             _accountsLUT.Remove(connectionId);
@@ -73,7 +71,7 @@ namespace OnlineChess.Data
             if (_playerMap[accountId].SignalRConnections.Count() == 0){
                 _playerMap[accountId].Online = false;
                 _playersInLobby.Remove(accountId);
-                _lobbyHub.RefreshPlayerListWith(_playersInLobby);
+                await _lobbyHub.RefreshPlayerListWith(_playersInLobby);
             }
         }
 
@@ -100,7 +98,7 @@ namespace OnlineChess.Data
             return _gameSessions[_playerMap[accountId].GameSessionId].SessionState;
         }
 
-        public void CreateGameSession(string accountId)
+        public async Task CreateGameSession(string accountId)
         {
             GameSession gameSession = new GameSession();
             gameSession.OwnerId = accountId;
@@ -113,11 +111,11 @@ namespace OnlineChess.Data
             // associated with this user to a group
             foreach (string connectionId in _playerMap[accountId].SignalRConnections)
             {
-                _lobbyHub.InsertIntoGroup(connectionId, gameSession.SessionId);
+                await _lobbyHub.InsertIntoGroup(connectionId, gameSession.SessionId);
             }
         }
 
-        public void JoinGameSession(string accountId, string hostId)
+        public async Task JoinGameSession(string accountId, string hostId)
         {
             GameSession gameSession = GetGameSession(hostId);
             if (gameSession.Players.Contains(accountId))
@@ -129,13 +127,13 @@ namespace OnlineChess.Data
             
             gameSession.Players.Add(accountId);
             _playerMap[accountId].GameSessionId = gameSession.SessionId;
-            _lobbyHub.ReRenderGameView(gameSession.SessionId, "StatsField");
+            await _lobbyHub.ReRenderGameView(gameSession.SessionId, "StatsField");
 
             // player might have opened Chess game from several devices, need to add all of the connections
             // associated with this user to a group
             foreach (string connectionId in _playerMap[accountId].SignalRConnections)
             {
-                _lobbyHub.InsertIntoGroup(connectionId, gameSession.SessionId);
+                await _lobbyHub.InsertIntoGroup(connectionId, gameSession.SessionId);
             }
         }
 
@@ -145,13 +143,13 @@ namespace OnlineChess.Data
             if (gameSession.Winner != string.Empty)
             {
                 // game is over, safe to leave
-                PlayerLeftGame(gameSession, accountId);
+                await PlayerLeftGame(gameSession, accountId);
             }
             else if (gameSession.OwnerId == accountId)
             {
                 // owner left, terminate game session
                 await _lobbyHub.NotifyPlayerLeft(accountId, gameSession.SessionId);
-                TerminateGameSession(gameSession);
+                await TerminateGameSession(gameSession);
             }
             else if (gameSession.OponentId == accountId)
             {
@@ -161,59 +159,59 @@ namespace OnlineChess.Data
                     case SessionState.Preparation:
                         // TODO: notify Host
                         gameSession.OponentId = string.Empty;
-                        PlayerLeftGame(gameSession, accountId);
+                        await PlayerLeftGame(gameSession, accountId);
                         break;
 
                     case SessionState.InGame:
                         // terminate game session ant notify others
                         await _lobbyHub.NotifyPlayerLeft(accountId, gameSession.SessionId);
-                        TerminateGameSession(gameSession);
+                        await TerminateGameSession(gameSession);
                         break;
                 }
             }
             else
             {
                 // observer left, never mind
-                PlayerLeftGame(gameSession, accountId);
+                await PlayerLeftGame(gameSession, accountId);
             }
             await _lobbyHub.RefreshPlayerList();
         }
 
-        public void PlayerLeftGame(GameSession gameSession, string accountId)
+        public async Task PlayerLeftGame(GameSession gameSession, string accountId)
         {
             gameSession.Players.Remove(accountId);
             _playerMap[accountId].GameSessionId = string.Empty;
-            _lobbyHub.ReRenderGameView(gameSession.SessionId, "StatsField");
+            await _lobbyHub.ReRenderGameView(gameSession.SessionId, "StatsField");
 
             foreach (string connectionId in _playerMap[accountId].SignalRConnections)
             {
-                _lobbyHub.RemoveFromGroup(connectionId, gameSession.SessionId);
+                await _lobbyHub.RemoveFromGroup(connectionId, gameSession.SessionId);
             }
 
             if (gameSession.Players.Count() == 0)
             {
-                TerminateGameSession(gameSession);
+                await TerminateGameSession(gameSession);
             }
         }
 
-        public void TerminateGameSession(GameSession gameSession)
+        public async Task TerminateGameSession(GameSession gameSession)
         {
             foreach (string playerId in gameSession.Players)
                 {
                     _playerMap[playerId].GameSessionId = string.Empty;
-                    _lobbyHub.KickPlayer(playerId);
+                    await _lobbyHub.KickPlayer(playerId);
 
                     foreach (string connectionId in _playerMap[playerId].SignalRConnections)
                     {
-                        _lobbyHub.RemoveFromGroup(connectionId, gameSession.SessionId);
+                        await _lobbyHub.RemoveFromGroup(connectionId, gameSession.SessionId);
                     }
                 }
                 _gameSessions.Remove(gameSession.SessionId);
         }
 
-        public void RefreshPLayerList()
+        public async Task RefreshPLayerList()
         {
-            _lobbyHub.RefreshPlayerListWith(_playersInLobby);
+            await _lobbyHub.RefreshPlayerListWith(_playersInLobby);
         }
 
         public FieldData GetSessionField(string sessionId)
@@ -221,18 +219,18 @@ namespace OnlineChess.Data
             return _gameSessions[sessionId].Field;
         }
 
-        public void StartGame(string sessionId)
+        public async Task StartGame(string sessionId)
         {
             _gameSessions[sessionId].SessionState = SessionState.InGame;
-            _lobbyHub.ReRenderGameView(sessionId, "StatsField");
+            await _lobbyHub.ReRenderGameView(sessionId, "StatsField");
 
             _gameSessions[sessionId].Field.InitFigures();
-            _lobbyHub.ReRenderGameView(sessionId, "GameField");
+            await _lobbyHub.ReRenderGameView(sessionId, "GameField");
         }
 
-        public void ReRender(string groupName, string target)
+        public async Task ReRender(string groupName, string target)
         {
-            _lobbyHub.ReRenderGameView(groupName, target);
+            await _lobbyHub.ReRenderGameView(groupName, target);
         }
 
         public List<string> GetPlayerConnections(string accountId)
