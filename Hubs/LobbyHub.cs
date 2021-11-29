@@ -63,6 +63,15 @@ namespace OnlineChess.Server.Hubs
             await Clients.GroupExcept(groupName, excludedConnections).SendAsync("PlayerLeft", playerId);
         }
 
+        public async Task NotifyHostPlayerLeft(string playerId, string ownerId)
+        {
+            List<string> connections = lobbyService.GetPlayerConnections(ownerId);
+            foreach (string connectionId in connections)
+            {
+                await Clients.Client(connectionId).SendAsync("PlayerLeft", playerId);
+            }
+        }
+
         public async Task InsertIntoGroup(string connectionId, string groupName)
         {
             await Groups.AddToGroupAsync(connectionId, groupName);

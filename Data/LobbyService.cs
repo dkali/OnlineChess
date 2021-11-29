@@ -157,9 +157,10 @@ namespace OnlineChess.Data
                 switch (gameSession.SessionState)
                 {
                     case SessionState.Preparation:
-                        // TODO: notify Host
+                        // notify only Host
                         gameSession.OponentId = string.Empty;
                         await PlayerLeftGame(gameSession, accountId);
+                        await _lobbyHub.NotifyHostPlayerLeft(accountId, gameSession.OwnerId);
                         break;
 
                     case SessionState.InGame:
