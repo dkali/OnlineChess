@@ -90,7 +90,13 @@
 
         hubConnection.On<string>("PlayerLeft", (playerId) => 
         {
-            DialogService.Confirm($"Player {sqliteDb.GetPlayerName(playerId)} left the game", "Oops", new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
+            DialogService.OpenAsync("Oops", ds =>
+            @<div>
+                <p>Player @sqliteDb.GetPlayerName(playerId) left the game</p>
+                <div class="row">
+                    <RadzenButton Text="Ok" Click="() => ds.Close(true)" Style="margin-bottom: 10px; width: 150px" />
+                </div>
+            </div>);
         });
 
         await hubConnection.StartAsync();
