@@ -2,14 +2,16 @@
 using EFChessData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace OnlineChess.Migrations
 {
     [DbContext(typeof(ChessDataContext))]
-    partial class ChessDataContextModelSnapshot : ModelSnapshot
+    [Migration("20211129201216_Cleanup")]
+    partial class Cleanup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -6,7 +6,6 @@ namespace EFChessData
     public class ChessDataContext : DbContext
     {
         public DbSet<Account> Users { get; set; }
-        public DbSet<GameSession> GameSessions { get; set; }
 
         public string DbPath { get; private set; }
 
