@@ -34,7 +34,6 @@ namespace OnlineChess
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<LobbyHub>();
-            services.AddSingleton<WeatherForecastService>();
             services.AddSingleton<LobbyService>();
             services.AddSingleton<SQLiteDataService>();
             services.AddScoped<PlayerDataService>();
