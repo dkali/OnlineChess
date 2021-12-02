@@ -23,6 +23,7 @@ namespace OnlineChess.Data
         public string EatenWhites { get; set; }
         public string EatenBlacks { get; set; }
         public string Winner { get; set; }
+        public List<string> Messages {get; set; }
 
         public GameSession()
         {
@@ -34,6 +35,7 @@ namespace OnlineChess.Data
             EatenBlacks = "";
             EatenWhites = "";
             Winner = string.Empty;
+            Messages = new List<string>();
         }
 
         public bool IsItMyTurn(string accountId)
@@ -74,6 +76,10 @@ namespace OnlineChess.Data
             Field.GameField[toRowIndex][toCellIndex].Value = Field.GameField[selectedCell.fromRowIndex][selectedCell.fromCellIndex].Value;
             Field.GameField[selectedCell.fromRowIndex][selectedCell.fromCellIndex].Value = string.Empty;
             WhiteTurn = !WhiteTurn;
+        }
+        public void SendTextMessage(string playerName, string newMessage)
+        {
+            Messages.Add($"{playerName}: {newMessage}");
         }
     }
 }

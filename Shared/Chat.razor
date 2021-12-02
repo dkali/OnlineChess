@@ -1,0 +1,46 @@
+@using OnlineChess.Data
+@inject LobbyService lobbyService
+@inject PlayerDataService playerDataService
+@inject SQLiteDataService sqliteDb
+
+<div class="grid-container">
+    <ul class="chat-log">
+        @foreach (var message in _gameSession.Messages)
+        {
+            <li>@message</li>
+        }
+    </ul>
+    <input @onkeypress="@(async e => await KeyPress(e))" @bind-value="@_textMessage" @bind-value:event="oninput"/>
+</div>
+
+@code 
+{
+    private GameSession _gameSession;
+    private string _textMessage = "";
+    protected override void OnInitialized()
+    {
+        _gameSession = lobbyService.GetGameSession(playerDataService.AccountId);
+    }
+
+    async Task OnChange(string newMessage, string name)
+    {
+        _gameSession.SendTextMessage(sqliteDb.GetPlayerName(playerDataService.AccountId), newMessage);
+        _textMessage = string.Empty;
+        await lobbyService.ReRender(_gameSession.SessionId, "Chat");
+    }
+
+    public void ReRender()
+    {
+        StateHasChanged();
+    }
+
+    private async Task KeyPress(KeyboardEventArgs key)
+    {
+        if (key.Code == @"Enter" && _textMessage != string.Empty)
+        {
+            _gameSession.SendTextMessage(sqliteDb.GetPlayerName(playerDataService.AccountId), _textMessage);
+            _textMessage = string.Empty;
+            await lobbyService.ReRender(_gameSession.SessionId, "Chat");
+        }
+    }
+}
