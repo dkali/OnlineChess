@@ -4,13 +4,28 @@
 
 <div class="chess-field">
     <div class="grid-container">
-        @for (int rowIndex = 0; rowIndex < 10; rowIndex++)
+        @if (!FlipBoard)
         {
-            @for (int cellIndex = 0; cellIndex < 10; cellIndex++)
+            @for (int rowIndex = 0; rowIndex < 10; rowIndex++)
             {
-                <CellUI RowIndex="@rowIndex"
-                    CellIndex="@cellIndex"
-                    GSession="@GSession" />
+                @for (int cellIndex = 0; cellIndex < 10; cellIndex++)
+                {
+                    <CellUI RowIndex="@rowIndex"
+                        CellIndex="@cellIndex"
+                        GSession="@GSession" />
+                }
+            }
+        }
+        else
+        {
+            @for (int rowIndex = 9; rowIndex >= 0; rowIndex--)
+            {
+                @for (int cellIndex = 9; cellIndex >= 0; cellIndex--)
+                {
+                    <CellUI RowIndex="@rowIndex"
+                        CellIndex="@cellIndex"
+                        GSession="@GSession" />
+                }
             }
         }
     </div>
@@ -19,6 +34,7 @@
 @code
 {
     public GameSession GSession { get; set; }
+    private bool FlipBoard { get; set; }
     protected override void OnInitialized()
     {
         GSession = lobbyService.GetGameSession(playerDataService.AccountId);
@@ -26,6 +42,7 @@
 
     public void ReRender()
     {
+        FlipBoard = GSession.BlackPlayer == playerDataService.AccountId;
         StateHasChanged();
     }
 }

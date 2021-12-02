@@ -1,7 +1,6 @@
 .grid-container {
     display: grid;
     grid-template-columns: auto;
-    background-color: #0e68b3;
     padding: 10px;
 }
 .chat-log {

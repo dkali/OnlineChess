@@ -4,7 +4,7 @@
 @inject PlayerDataService playerDataService
 @inject SQLiteDataService sqliteDb
 
-<div class="debug">
+<div>
     <div>Host: @sqliteDb.GetPlayerName(GSession.OwnerId)</div>
     @if (GSession.SessionState == SessionState.Preparation)
     {
@@ -54,7 +54,7 @@
 
         @if (GSession.Winner != string.Empty)
         {
-            <div><b>Winner is @sqliteDb.GetPlayerName(@GSession.Winner)</b></div>
+            <div class="winner"><b>Winner is @sqliteDb.GetPlayerName(@GSession.Winner)</b></div>
         }
     }
 
